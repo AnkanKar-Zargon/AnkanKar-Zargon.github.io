@@ -17,6 +17,7 @@ body {
   .navbar-brand.mb-0.h1 {
     font-size: 30px; /* Adjust the font size here */
     line-height: 0.5; /* Maintain a fixed height for the header */
+    padding: initial;
   }
   
   #sidebar {
