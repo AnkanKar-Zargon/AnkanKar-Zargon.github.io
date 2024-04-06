@@ -16,7 +16,7 @@ body {
   
   .navbar-brand.mb-0.h1 {
     font-size: 30px; /* Adjust the font size here */
-    line-height: 0.75; /* Maintain a fixed height for the header */
+    line-height: 1.65; /* Maintain a fixed height for the header */
     padding: initial;
   }
   
