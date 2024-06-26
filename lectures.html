@@ -3,22 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ankan Kar</title>
+  <title>Ankan Kar - Lecture Notes</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" type="text/css"
-    href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
-
-    <style>
-        .content {
-          font-size: 17px; /* Change this value to your desired font size */
-        }
-    </style>
+  <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
+  <style>
+    .content {
+      font-size: 17px; /* Change this value to your desired font size */
+    }
+  </style>
 </head>
 <body>
-
-
   <nav class="navbar navbar-dark bg-dark">
     <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
       <span class="navbar-toggler-icon"></span>
@@ -31,38 +27,65 @@
     </div>
   </nav>
 
-<div id="sidebar">
-  <button class="close-btn" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
-  <ul class="sidebar-menu">
-    <li><a href="index.html" onclick="toggleSidebar()">Home</a></li>
-    <li><a href="research.html" onclick="toggleSidebar()">Research</a></li>
-    <li><a href="publications.html" onclick="toggleSidebar()">Publications</a></li>
-    <li><a href="teaching.html" onclick="toggleSidebar()">Teaching</a></li>
-    <li><a href="lectures.html" onclick="toggleSidebar()">Lectures</a></li>
-    <li><a href="misc.html" onclick="toggleSidebar()">Miscellaneous</a></li>
-    <li><a href="contact.html" onclick="toggleSidebar()">Contact</a></li>
-  </ul>
-</div>
-
-<div id="overlay" onclick="toggleSidebar()"></div>
-
-<div class="container-fluid">
-  <div class="content">
-    <h2>Lecture Notes</h2>
-    <p>Some available lecture notes are given here.</p>
-    <p id="mathematics-olympiad-series"><u>Mathematics Olympiad Series -- (2023 to Ongoing)</u> <br> to be updated...</p>
-    <p id="abstract-algebra-groups-rings-for-net"><u>Abstract Algebra (Groups & Rings) for NET -- (2023 to Ongoing)</u> <br> to be updated...</p>
+  <div id="sidebar">
+    <button class="close-btn" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+    <ul class="sidebar-menu">
+      <li><a href="index.html" onclick="toggleSidebar()">Home</a></li>
+      <li><a href="research.html" onclick="toggleSidebar()">Research</a></li>
+      <li><a href="publications.html" onclick="toggleSidebar()">Publications</a></li>
+      <li><a href="teaching.html" onclick="toggleSidebar()">Teaching</a></li>
+      <li><a href="lectures.html" onclick="toggleSidebar()">Lectures</a></li>
+      <li><a href="misc.html" onclick="toggleSidebar()">Miscellaneous</a></li>
+      <li><a href="contact.html" onclick="toggleSidebar()">Contact</a></li>
+    </ul>
   </div>
-</div>
 
+  <div id="overlay" onclick="toggleSidebar()"></div>
 
+  <div class="container-fluid">
+    <div class="content">
+      <h2>Lecture Notes</h2>
+      <p>Some available lecture notes are given here.</p>
+      
+      <div id="lecture-notes">
+        <div class="lecture-note">
+          <p id="mathematics-olympiad-series"><u>Mathematics Olympiad Series -- (2023 to Ongoing)</u></p>
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#math-olympiad" aria-expanded="false" aria-controls="math-olympiad">
+            View Details
+          </button>
+          <div class="collapse" id="math-olympiad">
+            <div class="card card-body">
+              will be updated...
+            </div>
+          </div>
+        </div>
 
+        <br>
+        
+        <div class="lecture-note">
+          <p id="abstract-algebra-quick-lookup-groups-rings-for-net"><u>Abstract Algebra: A Quick Lookup Groups & Rings (for some NET students) -- (2023 to Ongoing)</u></p>
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#abstract-algebra" aria-expanded="false" aria-controls="abstract-algebra">
+            View Details
+          </button>
+          <div class="collapse" id="abstract-algebra">
+            <div class="card card-body">
+              <p><a href="group-theory.html" target="_blank">Group Theory</a></p>
+              <p><a href="ring-theory.html" target="_blank">Ring Theory</a></p>
+              links will be updated...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<button id="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
-  <i id="dark-mode-icon" class="fas fa-moon"></i>
-</button>
+  <button id="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+    <i id="dark-mode-icon" class="fas fa-moon"></i>
+  </button>
 
-<script src="script.js"></script>
-
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
