@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ankan Kar</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
+
+    <style>
+        .content {
+            font-size: 16px; /* Change this value to your desired font size */
+        }
+    </style>
+</head>
+<body>
+
+
+  <nav class="navbar navbar-dark bg-dark">
+    <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <span class="navbar-brand mb-0 h1">Ankan Kar</span>
+    <div class="navbar-brand-container">
+      <a href="https://www.linkedin.com/in/ankan-kar" target="_blank" class="icon-link"><i class="fab fa-linkedin"></i></a>
+      <a href="https://github.com/AnkanKar-Zargon/" target="_blank" class="icon-link"><i class="fab fa-github"></i></a>
+      <a href="mailto:ankank.mcs2023@cmi.ac.in" class="icon-link"><i class="far fa-envelope"></i></a>
+    </div>
+  </nav>
+
+<div id="sidebar">
+  <button class="close-btn" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+  <ul class="sidebar-menu">
+    <li><a href="index.html" onclick="toggleSidebar()">Home</a></li>
+    <li><a href="research.html" onclick="toggleSidebar()">Research</a></li>
+    <li><a href="publications.html" onclick="toggleSidebar()">Publications</a></li>
+    <li><a href="teaching.html" onclick="toggleSidebar()">Teaching</a></li>
+    <li><a href="lectures.html" onclick="toggleSidebar()">Lectures</a></li>
+    <li><a href="misc.html" onclick="toggleSidebar()">Miscellaneous</a></li>
+    <li><a href="contact.html" onclick="toggleSidebar()">Contact</a></li>
+  </ul>
+</div>
+
+<div id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="container-fluid">
+  <div class="content">
+    <h4>Inequalities</h4>
+    <p>This page contains the notes I gave during the lecture series <a href="lectures.html#mathematics-olympiad-series">Mathematics Olympiad Series -- (2023 to Ongoing)</a></p>
+    <ul>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 1.pdf" target="_blank">Lecture 1</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 2.pdf" target="_blank">Lecture 2</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 3.pdf" target="_blank">Lecture 3</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 4.pdf" target="_blank">Lecture 4</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 5.pdf" target="_blank">Lecture 5</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 6.pdf" target="_blank">Lecture 6</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 7.pdf" target="_blank">Lecture 7</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 8.pdf" target="_blank">Lecture 8</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 9.pdf" target="_blank">Lecture 9</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 10.pdf" target="_blank">Lecture 10</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 11.pdf" target="_blank">Lecture 11</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 12.pdf" target="_blank">Lecture 12</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 13.pdf" target="_blank">Lecture 13</a></li>
+        <li><a href="Lectures Notes/Olympiad Math Notes (2023)/Inequality/Inequality 14.pdf" target="_blank">Lecture 14</a></li>
+    </ul>    
+  </div>
+</div>
+
+
+
+
+<button id="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+  <i id="dark-mode-icon" class="fas fa-moon"></i>
+</button>
+
+<script src="script.js"></script>
+
+</body>
+</html>
