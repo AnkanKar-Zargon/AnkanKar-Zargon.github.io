@@ -25,6 +25,28 @@
     }
     .content {
             font-size: 18px; /* Change this value to your desired font size */
+    }
+
+    ul.bulletin {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul.bulletin li {
+            position: relative;
+            padding-left: 25px; /* Adjust to fit the arrow */
+            margin-bottom: 10px;
+            line-height: 1.5; /* Adjust for better alignment */
+        }
+
+        ul.bulletin li::before {
+            content: "\1F89A"; /* Arrowhead character 🢚 */
+            position: absolute;
+            left: 0;
+            top: 50%; /* Center vertically */
+            transform: translateY(-45%); /* Aligns with text */
+            font-size: 30px; /* Adjust size if needed */
+            color: #007BFF; /* Color for the arrow */
         }
   </style>
 </head>
@@ -106,6 +128,22 @@
       </div>
     </div>
   </div>
+
+
+    <div class="content">
+      <h2>Lecture Videos</h2>
+      <p>Some available lecture videos are given here.</p>
+      
+      <div id="lecture-videos">
+        <div class="lecture-video">
+          <p><u>LIMIT Camp 2021 (ISI Bangalore)</u></p>
+          <ul class="bulletin">
+            <li>A Guide to Problem Solving -- (August 19, 2021) &nbsp; [<a href="https://youtu.be/p6uwEwa0ym0" target="_blank">youtube link</a>] </li>
+            <li>Complex Numbers -- (August 17, 2021) &nbsp; [<a href="https://youtu.be/S_6wzs5EXS0" target="_blank">youtube link</a>]</li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
   <button id="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
     <i id="dark-mode-icon" class="fas fa-moon"></i>
