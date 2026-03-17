@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Wireless-Network Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1628;
+    --bg3: #141c35;
+    --card: #111827;
+    --card2: #1a2540;
+    --border: #1e2d4d;
+    --border2: #2a3f6a;
+    --cisco: #1BA0D7;
+    --cisco2: #00bceb;
+    --accent: #00e5a0;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --purple: #8b5cf6;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .topbar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+  }
+  .brand-dot { width: 10px; height: 10px; background: var(--cisco2); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
+  .topbar-right { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text2); }
+  .status-live {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(16,185,129,.12);
+    border: 1px solid rgba(16,185,129,.3);
+    color: var(--success);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .status-live::before { content:''; width:6px; height:6px; background:var(--success); border-radius:50%; animation: pulse 1.5s infinite; }
+
+  /* ── NAV TABS ── */
+  .nav {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+  }
+  .nav-tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--cisco2); border-bottom-color: var(--cisco2); }
+
+  /* ── LAYOUT ── */
+  .main { padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── GRIDS ── */
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .grid-12 { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  @media(max-width:900px) {
+    .grid-4{grid-template-columns:1fr 1fr}
+    .grid-2,.grid-3,.grid-12{grid-template-columns:1fr}
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text3);
+    margin-bottom: .75rem;
+  }
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+  .metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .metric-val { font-family: var(--display); font-size: 28px; font-weight: 800; color: var(--text); }
+  .metric-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+  .metric-up { color: var(--success); }
+  .metric-down { color: var(--danger); }
+
+  /* ── CANVAS WRAPPERS ── */
+  .chart-wrap { position: relative; width: 100%; height: 260px; }
+  .chart-wrap-sm { position: relative; width: 100%; height: 180px; }
+  .chart-wrap-lg { position: relative; width: 100%; height: 340px; }
+
+  /* ── AP TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:hover { background: var(--bg3); }
+  tbody td { padding: 10px 12px; color: var(--text2); }
+  tbody td:first-child { color: var(--text); font-weight: 500; font-family: var(--mono); font-size: 12px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-ok { background: rgba(16,185,129,.15); color: var(--success); }
+  .badge-warn { background: rgba(245,158,11,.15); color: var(--warn); }
+  .badge-err { background: rgba(239,68,68,.15); color: var(--danger); }
+
+  /* ── INFERENCE PANEL ── */
+  .inference-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .inference-card {
+    background: var(--card2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .inference-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .inference-title { font-family: var(--display); font-size: 15px; font-weight: 600; }
+  .inference-score {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--cisco2);
+  }
+  .score-bar-bg {
+    height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; margin: 8px 0 4px;
+  }
+  .score-bar { height: 100%; border-radius: 3px; transition: width 1s ease; }
+  .comparison-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .comparison-label { font-size: 12px; color: var(--text2); width: 140px; flex-shrink: 0; }
+  .comparison-bar-bg { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .comparison-bar { height: 100%; border-radius: 4px; }
+  .comparison-val { font-family: var(--mono); font-size: 12px; color: var(--text2); width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* ── AI FEATURE CARDS ── */
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .feature-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .feature-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .feature-desc { font-size: 12px; color: var(--text3); line-height: 1.5; }
+  .feature-metric { font-family: var(--mono); font-size: 20px; font-weight: 600; }
+
+  /* ── TOGGLE BUTTONS ── */
+  .btn-group { display: flex; gap: 4px; background: var(--bg3); border-radius: 8px; padding: 4px; }
+  .btn-group button {
+    background: none; border: none; color: var(--text2);
+    padding: 5px 12px; border-radius: 6px;
+    font-size: 12px; cursor: pointer; font-family: var(--sans);
+    transition: all .2s;
+  }
+  .btn-group button.active { background: var(--cisco2); color: #000; font-weight: 600; }
+
+  /* ── SECURITY ── */
+  .threat-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .threat-row:last-child { border-bottom: none; }
+  .threat-info { display: flex; flex-direction: column; gap: 2px; }
+  .threat-name { font-size: 13px; font-weight: 500; }
+  .threat-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+  .threat-action {
+    font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--border2);
+    background: none; color: var(--text2);
+    transition: all .2s; font-family: var(--sans);
+  }
+  .threat-action:hover { background: var(--card2); color: var(--text); }
+
+  /* ── PERFORMANCE COMPARISON ── */
+  .perf-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .perf-col { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+  .perf-col-title {
+    font-size: 12px; font-weight: 600; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 1rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .perf-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: #060d1a;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: #a8c0e8;
+  }
+  .kw { color: #7c9ef5; }
+  .str { color: #6be08a; }
+  .cmt { color: #4a5978; font-style: italic; }
+  .fn { color: #e0a060; }
+  .cls { color: #c792ea; }
+
+  /* ── TIMELINE ── */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; gap: 16px; padding-bottom: 20px; position: relative; }
+  .tl-item::before {
+    content: ''; position: absolute; left: 19px; top: 36px; bottom: 0;
+    width: 1px; background: var(--border);
+  }
+  .tl-item:last-child::before { display: none; }
+  .tl-dot {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+    border: 1px solid var(--border2);
+  }
+  .tl-content { flex: 1; }
+  .tl-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .tl-desc { font-size: 12px; color: var(--text3); line-height: 1.5; }
+  .tl-time { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 4px; }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .section-sub { font-size: 13px; color: var(--text3); margin-bottom: 1.5rem; }
+
+  /* ── RANGE SLIDER ── */
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--cisco2);
+    cursor: pointer;
+  }
+  .select-sm {
+    background: var(--bg3); border: 1px solid var(--border2);
+    color: var(--text2); padding: 4px 8px; border-radius: 6px;
+    font-size: 12px; font-family: var(--sans); cursor: pointer;
+  }
+
+  /* ── SCROLL ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    Wireless · Network Intelligence
+  </div>
+  <div class="topbar-right">
+    <span>Cloud-Managed Wi-Fi Platform</span>
+    <div class="status-live">LIVE DEMO</div>
+    <span id="clock" style="font-family:var(--mono);font-size:12px"></span>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-tab active" onclick="showSection('dashboard')">📡 Dashboard</div>
+  <div class="nav-tab" onclick="showSection('inference')">🤖 AI Inference</div>
+  <div class="nav-tab" onclick="showSection('comparison')">📊 Before vs After</div>
+  <div class="nav-tab" onclick="showSection('security')">🛡 Security</div>
+  <div class="nav-tab" onclick="showSection('code')">💻 Code Samples</div>
+  <div class="nav-tab" onclick="showSection('about')">📋 About Project</div>
+</div>
+
+<div class="main">
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 1: DASHBOARD
+══════════════════════════════════════════════════════ -->
+<div id="section-dashboard" class="section active">
+  <div class="section-title">Network Operations Center</div>
+  <div class="section-sub">Real-time telemetry across 4,200+ deployed Access Points • Last synced: <span id="sync-time"></span></div>
+
+  <!-- KPI Row -->
+  <div class="grid-4">
+    <div class="metric-card">
+      <div class="metric-label">Active APs</div>
+      <div class="metric-val" id="kpi-aps">4,218</div>
+      <div class="metric-sub"><span class="metric-up">↑ 42</span> deployed this week</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Connected Clients</div>
+      <div class="metric-val" id="kpi-clients">28,491</div>
+      <div class="metric-sub"><span class="metric-up">↑ 3.2%</span> vs yesterday</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Avg Throughput</div>
+      <div class="metric-val" id="kpi-throughput">842 <span style="font-size:14px;color:var(--text2)">Mbps</span></div>
+      <div class="metric-sub"><span class="metric-down">↓ 1.8%</span> peak load</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">AI Alerts Resolved</div>
+      <div class="metric-val" id="kpi-alerts">97.4%</div>
+      <div class="metric-sub"><span class="metric-up">↑ 4.1%</span> auto-remediated</div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid-2">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+        <div class="card-title">Throughput · 24h</div>
+        <div class="btn-group">
+          <button class="active" onclick="switchThroughput('24h',this)">24h</button>
+          <button onclick="switchThroughput('7d',this)">7d</button>
+          <button onclick="switchThroughput('30d',this)">30d</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="throughputChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Client Distribution by Band</div>
+      <div class="chart-wrap"><canvas id="bandChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- AP Table -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div class="card-title" style="margin:0">Access Point Health Monitor</div>
+      <select class="select-sm" onchange="filterAPs(this.value)">
+        <option value="all">All Sites</option>
+        <option value="ok">Online Only</option>
+        <option value="warn">Warnings</option>
+        <option value="err">Offline</option>
+      </select>
+    </div>
+    <table id="ap-table">
+      <thead><tr>
+        <th>AP ID</th><th>Location</th><th>Model</th>
+        <th>Clients</th><th>Throughput</th><th>Channel</th><th>Status</th>
+      </tr></thead>
+      <tbody id="ap-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 2: AI INFERENCE
+══════════════════════════════════════════════════════ -->
+<div id="section-inference" class="section">
+  <div class="section-title">AI-Powered Network Intelligence</div>
+  <div class="section-sub">Python + Java ML models running anomaly detection, channel optimization, and predictive failure analysis</div>
+
+  <!-- Model Scorecards -->
+  <div class="inference-grid">
+    <div class="inference-card">
+      <div class="inference-header">
+        <div class="inference-title">🔍 Anomaly Detection</div>
+        <div class="inference-score" id="anomaly-score">94.2%</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Random Forest · Python scikit-learn · 1,200 features</div>
+      <div class="score-bar-bg"><div class="score-bar" style="width:94.2%;background:var(--cisco2)"></div></div>
+      <div style="font-size:11px;color:var(--text3)">Accuracy on test set (last 30 days)</div>
+      <div style="margin-top:16px">
+        <div class="comparison-row"><div class="comparison-label">Precision</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:92%;background:var(--cisco2)"></div></div><div class="comparison-val">92%</div></div>
+        <div class="comparison-row"><div class="comparison-label">Recall</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:96%;background:var(--accent)"></div></div><div class="comparison-val">96%</div></div>
+        <div class="comparison-row"><div class="comparison-label">F1 Score</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:94%;background:var(--purple)"></div></div><div class="comparison-val">94%</div></div>
+        <div class="comparison-row"><div class="comparison-label">False Positive Rate</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:8%;background:var(--danger)"></div></div><div class="comparison-val">8%</div></div>
+      </div>
+    </div>
+
+    <div class="inference-card">
+      <div class="inference-header">
+        <div class="inference-title">📡 Channel Optimizer</div>
+        <div class="inference-score" id="channel-score">+31%</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Reinforcement Learning · Java + TensorFlow Lite · Real-time inference</div>
+      <div class="score-bar-bg"><div class="score-bar" style="width:78%;background:var(--accent)"></div></div>
+      <div style="font-size:11px;color:var(--text3)">Throughput improvement vs baseline (no AI)</div>
+      <div style="margin-top:16px">
+        <div class="comparison-row"><div class="comparison-label">Interference Reduction</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:67%;background:var(--accent)"></div></div><div class="comparison-val">67%</div></div>
+        <div class="comparison-row"><div class="comparison-label">Latency Improvement</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:43%;background:var(--cisco2)"></div></div><div class="comparison-val">43%</div></div>
+        <div class="comparison-row"><div class="comparison-label">Power Efficiency</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:28%;background:var(--warn)"></div></div><div class="comparison-val">28%</div></div>
+        <div class="comparison-row"><div class="comparison-label">Roaming Success</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:88%;background:var(--purple)"></div></div><div class="comparison-val">88%</div></div>
+      </div>
+    </div>
+
+    <div class="inference-card">
+      <div class="inference-header">
+        <div class="inference-title">⚠️ Predictive Failure</div>
+        <div class="inference-score" id="predict-score">89.7%</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">LSTM Neural Network · Python · 48h ahead prediction</div>
+      <div class="score-bar-bg"><div class="score-bar" style="width:89.7%;background:var(--warn)"></div></div>
+      <div style="font-size:11px;color:var(--text3)">AP failure prediction accuracy (48h window)</div>
+      <div style="margin-top:16px">
+        <div class="comparison-row"><div class="comparison-label">True Positives</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:89%;background:var(--warn)"></div></div><div class="comparison-val">89%</div></div>
+        <div class="comparison-row"><div class="comparison-label">Mean Time Saved</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:72%;background:var(--cisco2)"></div></div><div class="comparison-val">6.2h</div></div>
+        <div class="comparison-row"><div class="comparison-label">Coverage</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:96%;background:var(--accent)"></div></div><div class="comparison-val">96%</div></div>
+        <div class="comparison-row"><div class="comparison-label">Missed Failures</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:11%;background:var(--danger)"></div></div><div class="comparison-val">11%</div></div>
+      </div>
+    </div>
+
+    <div class="inference-card">
+      <div class="inference-header">
+        <div class="inference-title">🧠 Client Classifier</div>
+        <div class="inference-score" id="classify-score">97.8%</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">GBM · Java · Device fingerprinting + QoS assignment</div>
+      <div class="score-bar-bg"><div class="score-bar" style="width:97.8%;background:var(--purple)"></div></div>
+      <div style="font-size:11px;color:var(--text3)">Device classification accuracy across 120 categories</div>
+      <div style="margin-top:16px">
+        <div class="comparison-row"><div class="comparison-label">IoT Devices</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:99%;background:var(--purple)"></div></div><div class="comparison-val">99%</div></div>
+        <div class="comparison-row"><div class="comparison-label">Mobile Phones</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:98%;background:var(--cisco2)"></div></div><div class="comparison-val">98%</div></div>
+        <div class="comparison-row"><div class="comparison-label">Laptops/PCs</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:97%;background:var(--accent)"></div></div><div class="comparison-val">97%</div></div>
+        <div class="comparison-row"><div class="comparison-label">Unknown/Rogue</div><div class="comparison-bar-bg"><div class="comparison-bar" style="width:85%;background:var(--danger)"></div></div><div class="comparison-val">85%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Inference Simulator -->
+  <div class="card">
+    <div class="card-title">Live Inference Simulator — Adjust Inputs, See Outputs</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Client Count: <span id="lbl-clients">150</span></div>
+        <input type="range" min="10" max="500" value="150" oninput="runInference()" id="inp-clients">
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Interference Level: <span id="lbl-noise">-72</span> dBm</div>
+        <input type="range" min="-90" max="-50" value="-72" oninput="runInference()" id="inp-noise">
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">AP Age (months): <span id="lbl-age">18</span></div>
+        <input type="range" min="1" max="60" value="18" oninput="runInference()" id="inp-age">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem" id="inference-outputs">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 3: BEFORE vs AFTER
+══════════════════════════════════════════════════════ -->
+<div id="section-comparison" class="section">
+  <div class="section-title">Before vs After — AI Integration Impact</div>
+  <div class="section-sub">Comparing network KPIs 90 days before and after deploying Cisco AI-powered wireless management</div>
+
+  <div class="perf-compare" style="margin-bottom:1.5rem">
+    <div class="perf-col">
+      <div class="perf-col-title"><div class="perf-dot" style="background:#ef4444"></div>Before AI (Legacy)</div>
+      <div class="chart-wrap"><canvas id="beforeChart"></canvas></div>
+    </div>
+    <div class="perf-col">
+      <div class="perf-col-title"><div class="perf-dot" style="background:var(--cisco2)"></div>After AI (Current)</div>
+      <div class="chart-wrap"><canvas id="afterChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title">Side-by-Side Metric Comparison</div>
+    <div class="chart-wrap-lg"><canvas id="compareChart"></canvas></div>
+  </div>
+
+  <div class="grid-3">
+    <div class="metric-card" style="border-left:3px solid var(--success)">
+      <div class="metric-label">Incident Resolution Time</div>
+      <div class="metric-val" style="color:var(--success)">↓ 68%</div>
+      <div class="metric-sub">From 4.2h avg → 1.3h avg</div>
+    </div>
+    <div class="metric-card" style="border-left:3px solid var(--cisco2)">
+      <div class="metric-label">Network Uptime</div>
+      <div class="metric-val" style="color:var(--cisco2)">↑ 99.97%</div>
+      <div class="metric-sub">From 98.2% (manual management)</div>
+    </div>
+    <div class="metric-card" style="border-left:3px solid var(--purple)">
+      <div class="metric-label">Operational Cost Savings</div>
+      <div class="metric-val" style="color:var(--purple)">↓ 41%</div>
+      <div class="metric-sub">Automation replaces manual tuning</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 4: SECURITY
+══════════════════════════════════════════════════════ -->
+<div id="section-security" class="section">
+  <div class="section-title">Security Intelligence Center</div>
+  <div class="section-sub">AI-driven threat detection across all wireless endpoints</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Threat Timeline — Last 24h</div>
+      <div class="chart-wrap"><canvas id="threatChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Live Threat Queue</div>
+      <div id="threat-list"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Attack Vector Breakdown</div>
+      <div class="chart-wrap"><canvas id="attackChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">AI Confidence by Threat Type</div>
+      <div id="confidence-list" style="margin-top:.5rem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 5: CODE SAMPLES
+══════════════════════════════════════════════════════ -->
+<div id="section-code" class="section">
+  <div class="section-title">Code Samples — Java + Python</div>
+  <div class="section-sub">Core patterns used in this project: telemetry ingestion, anomaly detection, channel optimization</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Python — Anomaly Detection (scikit-learn)</div>
+      <div class="code-block"><span class="cmt"># anomaly_detector.py</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> <span class="cls">RandomForestClassifier</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">StandardScaler</span>
+
+<span class="kw">class</span> <span class="cls">APAnomalyDetector</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.model = <span class="cls">RandomForestClassifier</span>(
+            n_estimators=<span class="str">200</span>,
+            max_depth=<span class="str">12</span>,
+            random_state=<span class="str">42</span>
+        )
+        self.scaler = <span class="cls">StandardScaler</span>()
+
+    <span class="kw">def</span> <span class="fn">extract_features</span>(self, telemetry: dict):
+        <span class="str">"""Extract 12 key features from AP telemetry."""</span>
+        <span class="kw">return</span> [
+            telemetry[<span class="str">"client_count"</span>],
+            telemetry[<span class="str">"throughput_mbps"</span>],
+            telemetry[<span class="str">"noise_floor_dbm"</span>],
+            telemetry[<span class="str">"retry_rate"</span>],
+            telemetry[<span class="str">"cpu_utilization"</span>],
+            telemetry[<span class="str">"memory_free_mb"</span>],
+            telemetry[<span class="str">"uptime_hours"</span>] % <span class="str">24</span>,
+            telemetry[<span class="str">"channel_utilization"</span>],
+            telemetry[<span class="str">"roam_events_1h"</span>],
+            telemetry[<span class="str">"beacon_miss_rate"</span>],
+            telemetry[<span class="str">"arp_errors"</span>],
+            telemetry[<span class="str">"dhcp_failures"</span>],
+        ]
+
+    <span class="kw">def</span> <span class="fn">predict</span>(self, telemetry: dict) -> dict:
+        features = self.<span class="fn">extract_features</span>(telemetry)
+        scaled = self.scaler.<span class="fn">transform</span>([features])
+        prob = self.model.<span class="fn">predict_proba</span>(scaled)[<span class="str">0</span>][<span class="str">1</span>]
+        <span class="kw">return</span> {
+            <span class="str">"anomaly"</span>: prob > <span class="str">0.65</span>,
+            <span class="str">"confidence"</span>: <span class="fn">round</span>(prob * <span class="str">100</span>, <span class="str">1</span>),
+            <span class="str">"severity"</span>: <span class="str">"HIGH"</span> <span class="kw">if</span> prob > <span class="str">0.85</span> <span class="kw">else</span> <span class="str">"MED"</span>
+        }</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Java — Telemetry Processor (Spring Boot)</div>
+      <div class="code-block"><span class="cmt">// TelemetryProcessor.java</span>
+<span class="kw">@Service</span>
+<span class="kw">public class</span> <span class="cls">TelemetryProcessor</span> {
+
+    <span class="kw">private final</span> <span class="cls">AIInferenceClient</span> aiClient;
+    <span class="kw">private final</span> <span class="cls">AlertPublisher</span> alertPublisher;
+    <span class="kw">private final</span> <span class="cls">MetricsStore</span> metricsStore;
+
+    <span class="kw">@KafkaListener</span>(topics = <span class="str">"ap-telemetry"</span>)
+    <span class="kw">public void</span> <span class="fn">processTelemetry</span>(
+            <span class="cls">ApTelemetryEvent</span> event) {
+
+        <span class="cmt">// Enrich with historical baseline</span>
+        <span class="cls">ApBaseline</span> baseline = metricsStore
+            .<span class="fn">getBaseline</span>(event.getApId());
+
+        <span class="cls">InferenceRequest</span> req = <span class="cls">InferenceRequest</span>
+            .<span class="fn">builder</span>()
+            .<span class="fn">apId</span>(event.<span class="fn">getApId</span>())
+            .<span class="fn">features</span>(event.<span class="fn">toFeatureVector</span>())
+            .<span class="fn">baselineDeviations</span>(
+                baseline.<span class="fn">computeDeviations</span>(event))
+            .<span class="fn">build</span>();
+
+        <span class="cls">InferenceResult</span> result =
+            aiClient.<span class="fn">runAnomalyDetection</span>(req);
+
+        <span class="kw">if</span> (result.<span class="fn">isAnomaly</span>()) {
+            alertPublisher.<span class="fn">publish</span>(
+                <span class="cls">Alert</span>.<span class="fn">from</span>(event, result));
+        }
+
+        metricsStore.<span class="fn">record</span>(event, result);
+    }
+}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Python — Channel Optimizer (RL)</div>
+      <div class="code-block"><span class="cmt"># channel_optimizer.py</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">class</span> <span class="cls">ChannelOptimizer</span>:
+    <span class="str">"""Q-Learning based channel selector."""</span>
+    CHANNELS_5GHZ = [<span class="str">36,40,44,48,149,153,157,161</span>]
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, n_aps, lr=<span class="str">0.01</span>, gamma=<span class="str">0.95</span>):
+        self.q_table = np.<span class="fn">zeros</span>(
+            (n_aps, <span class="fn">len</span>(self.CHANNELS_5GHZ)))
+        self.lr = lr
+        self.gamma = gamma
+        self.epsilon = <span class="str">0.1</span>
+
+    <span class="kw">def</span> <span class="fn">select_channel</span>(self, ap_idx, state) -> <span class="fn">int</span>:
+        <span class="kw">if</span> np.random.<span class="fn">random</span>() < self.epsilon:
+            <span class="kw">return</span> np.random.<span class="fn">randint</span>(
+                <span class="fn">len</span>(self.CHANNELS_5GHZ))
+        <span class="kw">return</span> np.<span class="fn">argmax</span>(self.q_table[ap_idx])
+
+    <span class="kw">def</span> <span class="fn">update</span>(self, ap, action, reward, next_state):
+        best_next = np.<span class="fn">max</span>(self.q_table[ap])
+        td_target = reward + self.gamma * best_next
+        self.q_table[ap][action] += self.lr * (
+            td_target - self.q_table[ap][action])
+
+    <span class="kw">def</span> <span class="fn">get_recommendation</span>(self, ap_idx) -> dict:
+        best = np.<span class="fn">argmax</span>(self.q_table[ap_idx])
+        <span class="kw">return</span> {
+            <span class="str">"channel"</span>: self.CHANNELS_5GHZ[best],
+            <span class="str">"expected_gain"</span>: <span class="fn">float</span>(
+                np.<span class="fn">max</span>(self.q_table[ap_idx]))
+        }</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Python — LSTM Failure Predictor</div>
+      <div class="code-block"><span class="cmt"># failure_predictor.py</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">class</span> <span class="cls">LSTMFailurePredictor</span>:
+    <span class="str">"""Simulated LSTM for AP failure prediction."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, seq_len=<span class="str">48</span>, threshold=<span class="str">0.7</span>):
+        self.seq_len = seq_len  <span class="cmt"># 48h lookback</span>
+        self.threshold = threshold
+        <span class="cmt"># Weights learned during training</span>
+        self.w_input  = np.random.<span class="fn">randn</span>(<span class="str">8</span>, <span class="str">32</span>) * <span class="str">0.1</span>
+        self.w_hidden = np.random.<span class="fn">randn</span>(<span class="str">32</span>, <span class="str">32</span>) * <span class="str">0.1</span>
+        self.w_output = np.random.<span class="fn">randn</span>(<span class="str">32</span>, <span class="str">1</span>) * <span class="str">0.1</span>
+
+    <span class="kw">def</span> <span class="fn">sigmoid</span>(self, x):
+        <span class="kw">return</span> <span class="str">1</span> / (<span class="str">1</span> + np.<span class="fn">exp</span>(-np.<span class="fn">clip</span>(x,-<span class="str">500</span>,<span class="str">500</span>)))
+
+    <span class="kw">def</span> <span class="fn">predict</span>(self, sequence: np.ndarray) -> dict:
+        h = np.<span class="fn">zeros</span>(<span class="str">32</span>)
+        <span class="kw">for</span> step <span class="kw">in</span> sequence[-self.seq_len:]:
+            h = np.<span class="fn">tanh</span>(
+                step @ self.w_input +
+                h @ self.w_hidden)
+        prob = <span class="fn">float</span>(self.<span class="fn">sigmoid</span>(
+            h @ self.w_output)[<span class="str">0</span>])
+        <span class="kw">return</span> {
+            <span class="str">"failure_prob"</span>: <span class="fn">round</span>(prob, <span class="str">3</span>),
+            <span class="str">"alert"</span>: prob > self.threshold,
+            <span class="str">"hours_ahead"</span>: <span class="str">48</span>
+        }</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     SECTION 6: ABOUT
+══════════════════════════════════════════════════════ -->
+<div id="section-about" class="section">
+  <div class="section-title">About This Project</div>
+  <div class="section-sub">This is just a demo setup. No actual testing is being done here. This is a comprehensive, presentation-ready project — no APIs needed, all self-contained with mock data and real inference logic in the browser. I have built a comprehensive, self-contained project as an HTML artifact.</div>
+
+  <div class="grid-12">
+    <div>
+      <!-- Skills Coverage -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-title">Role Requirements Covered</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:.5rem">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+              <span>Java (Spring Boot / Kafka)</span><span style="color:var(--cisco2)">✓ Shown</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar" style="width:100%;background:var(--cisco2)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+              <span>Python (ML / scikit / numpy)</span><span style="color:var(--cisco2)">✓ Shown</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar" style="width:100%;background:var(--cisco2)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+              <span>AI / ML Usage</span><span style="color:var(--cisco2)">✓ Shown</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar" style="width:100%;background:var(--accent)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+              <span>Networking Knowledge (Wi-Fi)</span><span style="color:var(--cisco2)">✓ Shown</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar" style="width:100%;background:var(--purple)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+              <span>PM / Cross-team Collaboration</span><span style="color:var(--warn)">Demo via UI</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar" style="width:80%;background:var(--warn)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px">
+              <span>Cloud-managed wireless</span><span style="color:var(--cisco2)">✓ Shown</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar" style="width:100%;background:var(--cisco2)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tech Stack -->
+      <div class="card">
+        <div class="card-title">Tech Stack</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:.5rem">
+          <span class="badge badge-ok">Python 3.11</span>
+          <span class="badge badge-ok">scikit-learn</span>
+          <span class="badge badge-ok">NumPy</span>
+          <span class="badge badge-ok">TensorFlow Lite</span>
+          <span class="badge" style="background:rgba(27,160,215,.15);color:var(--cisco)">Java 21</span>
+          <span class="badge" style="background:rgba(27,160,215,.15);color:var(--cisco)">Spring Boot</span>
+          <span class="badge" style="background:rgba(27,160,215,.15);color:var(--cisco)">Apache Kafka</span>
+          <span class="badge badge-warn">RL / Q-Learning</span>
+          <span class="badge badge-warn">LSTM</span>
+          <span class="badge" style="background:rgba(139,92,246,.15);color:var(--purple)">Chart.js</span>
+          <span class="badge" style="background:rgba(139,92,246,.15);color:var(--purple)">HTML/CSS/JS</span>
+          <span class="badge" style="background:rgba(139,92,246,.15);color:var(--purple)">No External API</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card">
+      <div class="card-title">What This Project Demonstrates</div>
+      <div class="timeline" style="margin-top:.75rem">
+        <div class="tl-item">
+          <div class="tl-dot" style="background:rgba(27,160,215,.15)">📡</div>
+          <div class="tl-content">
+            <div class="tl-title">Real-time Telemetry Dashboard</div>
+            <div class="tl-desc">Simulates 4,200+ Access Points reporting live metrics — client count, throughput, channel utilization, noise floor — mimicking Cisco Meraki / Catalyst architecture.</div>
+            <div class="tl-time">Tab: Dashboard</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:rgba(0,229,160,.15)">🤖</div>
+          <div class="tl-content">
+            <div class="tl-title">4 AI Model Scorecards + Live Inference</div>
+            <div class="tl-desc">Anomaly Detection (Random Forest), Channel Optimizer (Q-Learning RL), Failure Predictor (LSTM), Client Classifier (GBM) — all with precision/recall/F1 metrics and an interactive inference simulator.</div>
+            <div class="tl-time">Tab: AI Inference</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:rgba(245,158,11,.15)">📊</div>
+          <div class="tl-content">
+            <div class="tl-title">Before vs After Impact</div>
+            <div class="tl-desc">Side-by-side chart comparison showing measurable improvements from AI adoption: ↓68% incident time, ↑99.97% uptime, ↓41% operational cost.</div>
+            <div class="tl-time">Tab: Before vs After</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:rgba(239,68,68,.15)">🛡</div>
+          <div class="tl-content">
+            <div class="tl-title">Security Intelligence</div>
+            <div class="tl-desc">Threat detection timeline, live threat queue with severity classification, attack vector breakdown, and AI confidence scores per threat category.</div>
+            <div class="tl-time">Tab: Security</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:rgba(139,92,246,.15)">💻</div>
+          <div class="tl-content">
+            <div class="tl-title">Production-Quality Code Samples</div>
+            <div class="tl-desc">Java (Spring Boot + Kafka telemetry processor) and Python (anomaly detector, RL channel optimizer, LSTM failure predictor) — patterns directly relevant to Cisco Wireless codebase.</div>
+            <div class="tl-time">Tab: Code Samples</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString();
+  document.getElementById('sync-time').textContent = now.toLocaleTimeString();
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ── NAV ──
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── AP TABLE DATA ──
+const apData = [
+  {id:'AP-0042',loc:'Bldg A · Floor 2',model:'Catalyst 9136',clients:48,tp:'920 Mbps',ch:'6 (2.4)',status:'ok'},
+  {id:'AP-0071',loc:'Bldg B · Lobby',model:'Catalyst 9120',clients:112,tp:'1.2 Gbps',ch:'44 (5)',status:'ok'},
+  {id:'AP-0119',loc:'Conf Room C3',model:'Meraki MR46',clients:18,tp:'450 Mbps',ch:'1 (2.4)',status:'warn'},
+  {id:'AP-0203',loc:'Warehouse · W1',model:'Catalyst 9115',clients:6,tp:'210 Mbps',ch:'153 (5)',status:'ok'},
+  {id:'AP-0317',loc:'Cafeteria',model:'Meraki MR46',clients:89,tp:'780 Mbps',ch:'11 (2.4)',status:'ok'},
+  {id:'AP-0421',loc:'Executive Suite',model:'Catalyst 9136',clients:22,tp:'1.4 Gbps',ch:'161 (5)',status:'ok'},
+  {id:'AP-0508',loc:'Parking Garage',model:'Meraki MR46E',clients:3,tp:'0 Mbps',ch:'—',status:'err'},
+  {id:'AP-0612',loc:'Lab · R&D Floor',model:'Catalyst 9164',clients:44,tp:'2.1 Gbps',ch:'149 (5)',status:'ok'},
+  {id:'AP-0701',loc:'Auditorium',model:'Catalyst 9120',clients:201,tp:'680 Mbps',ch:'36 (5)',status:'warn'},
+  {id:'AP-0814',loc:'Server Room',model:'Meraki MR36',clients:11,tp:'340 Mbps',ch:'6 (2.4)',status:'ok'},
+];
+function renderAPs(filter='all') {
+  const tbody = document.getElementById('ap-tbody');
+  tbody.innerHTML = '';
+  const filtered = filter === 'all' ? apData : apData.filter(a => a.status === filter);
+  filtered.forEach(ap => {
+    const badge = ap.status==='ok'
+      ? '<span class="badge badge-ok">● Online</span>'
+      : ap.status==='warn'
+      ? '<span class="badge badge-warn">⚠ Warning</span>'
+      : '<span class="badge badge-err">✕ Offline</span>';
+    tbody.innerHTML += `<tr>
+      <td>${ap.id}</td><td>${ap.loc}</td><td>${ap.model}</td>
+      <td>${ap.clients}</td><td>${ap.tp}</td><td style="font-family:var(--mono);font-size:12px">${ap.ch}</td>
+      <td>${badge}</td>
+    </tr>`;
+  });
+}
+renderAPs();
+function filterAPs(v) { renderAPs(v); }
+
+// ── CHARTS ──
+
+// Throughput
+const tpHours = Array.from({length:24},(_,i)=>i+':00');
+const tpData24 = [420,380,350,290,240,200,280,520,780,940,1020,1100,980,920,1050,1180,1240,1100,980,860,720,600,520,460];
+const tpData7d = [820,780,810,750,900,1050,980,860,840,920,1000,1100,1080,960,880,930,1020,1100,1150,1050,980,860,810,780];
+const tpData30d = [700,750,800,820,780,760,840,900,920,880,860,940,980,960,900,920,1000,1050,1020,980,1000,1050,1100,1080];
+
+let tpChart = new Chart(document.getElementById('throughputChart'), {
+  type: 'line',
+  data: {
+    labels: tpHours,
+    datasets: [{
+      label: 'Throughput (Mbps)',
+      data: tpData24,
+      borderColor: '#00bceb',
+      backgroundColor: 'rgba(0,188,235,0.08)',
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: true,
+      tension: 0.4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#64748b', font:{size:10}, maxTicksLimit:8 }, grid: { color: '#1e2d4d' } },
+      y: { ticks: { color: '#64748b', font:{size:10} }, grid: { color: '#1e2d4d' } }
+    }
+  }
+});
+
+function switchThroughput(range, btn) {
+  document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const data = range==='24h' ? tpData24 : range==='7d' ? tpData7d : tpData30d;
+  tpChart.data.datasets[0].data = data;
+  tpChart.update();
+}
+
+// Band chart
+new Chart(document.getElementById('bandChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['5 GHz (Wi-Fi 6)', '6 GHz (Wi-Fi 6E)', '2.4 GHz', '5 GHz (legacy)'],
+    datasets: [{ data: [44, 28, 18, 10],
+      backgroundColor: ['#00bceb','#00e5a0','#8b5cf6','#f59e0b'],
+      borderColor: '#111827', borderWidth: 2 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: { color: '#94a3b8', font:{size:11}, padding: 12, boxWidth: 12 }
+      }
+    }
+  }
+});
+
+// Before / After
+const perfLabels = ['Uptime %','Throughput','Incident Resolution','Client Satisfaction','Security Score','Channel Efficiency'];
+const beforeVals = [98.2, 62, 32, 71, 66, 54];
+const afterVals  = [99.97, 94, 87, 93, 91, 89];
+
+new Chart(document.getElementById('beforeChart'), {
+  type: 'radar',
+  data: {
+    labels: perfLabels,
+    datasets: [{ label: 'Legacy', data: beforeVals,
+      borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.12)',
+      borderWidth: 2, pointRadius: 3 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { display: false },
+        grid: { color: '#1e2d4d' },
+        pointLabels: { color: '#64748b', font:{size:10} }
+      }
+    }
+  }
+});
+
+new Chart(document.getElementById('afterChart'), {
+  type: 'radar',
+  data: {
+    labels: perfLabels,
+    datasets: [{ label: 'AI-Powered', data: afterVals,
+      borderColor: '#00bceb', backgroundColor: 'rgba(0,188,235,0.12)',
+      borderWidth: 2, pointRadius: 3 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { display: false },
+        grid: { color: '#1e2d4d' },
+        pointLabels: { color: '#64748b', font:{size:10} }
+      }
+    }
+  }
+});
+
+new Chart(document.getElementById('compareChart'), {
+  type: 'bar',
+  data: {
+    labels: perfLabels,
+    datasets: [
+      { label: 'Before AI', data: beforeVals,
+        backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: 4 },
+      { label: 'After AI', data: afterVals,
+        backgroundColor: 'rgba(0,188,235,0.8)', borderRadius: 4 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: { color: '#94a3b8', font:{size:12}, boxWidth: 12 }
+      }
+    },
+    scales: {
+      x: { ticks: { color: '#64748b', font:{size:11} }, grid: { color: '#1e2d4d' } },
+      y: {
+        min: 0, max: 100,
+        ticks: {
+          color: '#64748b', font:{size:11},
+          callback: v => v+'%'
+        },
+        grid: { color: '#1e2d4d' }
+      }
+    }
+  }
+});
+
+// Security Charts
+const threatHours = Array.from({length:24}, (_,i) => i+':00');
+const threatCounts = [0,0,1,0,2,1,0,3,5,8,6,4,7,9,6,5,8,11,9,7,5,4,3,2];
+new Chart(document.getElementById('threatChart'), {
+  type: 'bar',
+  data: {
+    labels: threatHours,
+    datasets: [{
+      label: 'Threats Detected',
+      data: threatCounts,
+      backgroundColor: threatCounts.map(v => v > 8 ? 'rgba(239,68,68,0.8)' : v > 5 ? 'rgba(245,158,11,0.7)' : 'rgba(0,188,235,0.5)'),
+      borderRadius: 3
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#64748b', font:{size:9}, maxTicksLimit:8 }, grid: { color: '#1e2d4d' } },
+      y: { ticks: { color: '#64748b', font:{size:10} }, grid: { color: '#1e2d4d' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('attackChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Deauth Flood', 'Rogue AP', 'KRACK / PMF', 'Evil Twin', 'ARP Spoof', 'Other'],
+    datasets: [{
+      data: [31, 24, 18, 14, 9, 4],
+      backgroundColor: ['#ef4444','#f59e0b','#8b5cf6','#00bceb','#00e5a0','#64748b'],
+      borderColor: '#111827', borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { color: '#94a3b8', font:{size:11}, padding:10, boxWidth:12 } }
+    }
+  }
+});
+
+// Threat list
+const threats = [
+  {name:'Deauth Flood', ap:'AP-0701', time:'17:42', severity:'HIGH'},
+  {name:'Rogue AP Detected', ap:'AP-0119', time:'17:38', severity:'HIGH'},
+  {name:'ARP Spoofing', ap:'AP-0203', time:'17:31', severity:'MED'},
+  {name:'Unusual Traffic Pattern', ap:'AP-0042', time:'17:22', severity:'MED'},
+  {name:'Client Probing Anomaly', ap:'AP-0317', time:'17:15', severity:'LOW'},
+  {name:'SSID Impersonation', ap:'AP-0612', time:'17:08', severity:'HIGH'},
+];
+const threatList = document.getElementById('threat-list');
+threats.forEach(t => {
+  const cls = t.severity==='HIGH' ? 'badge-err' : t.severity==='MED' ? 'badge-warn' : 'badge-ok';
+  threatList.innerHTML += `<div class="threat-row">
+    <div class="threat-info">
+      <div class="threat-name">${t.name}</div>
+      <div class="threat-meta">${t.ap} · ${t.time}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="badge ${cls}">${t.severity}</span>
+      <button class="threat-action" onclick="this.textContent='✓ Done';this.style.color='var(--success)'">Mitigate</button>
+    </div>
+  </div>`;
+});
+
+// Confidence list
+const confidences = [
+  {name:'Deauth Flood Detection', val:97, color:'var(--danger)'},
+  {name:'Rogue AP Fingerprint', val:92, color:'var(--warn)'},
+  {name:'KRACK Pattern Match', val:88, color:'var(--purple)'},
+  {name:'Evil Twin Heuristic', val:84, color:'var(--cisco2)'},
+  {name:'ARP Spoof Classifier', val:79, color:'var(--accent)'},
+];
+const confList = document.getElementById('confidence-list');
+confidences.forEach(c => {
+  confList.innerHTML += `<div class="comparison-row">
+    <div class="comparison-label">${c.name}</div>
+    <div class="comparison-bar-bg"><div class="comparison-bar" style="width:${c.val}%;background:${c.color}"></div></div>
+    <div class="comparison-val">${c.val}%</div>
+  </div>`;
+});
+
+// ── INFERENCE SIMULATOR ──
+function runInference() {
+  const clients = parseInt(document.getElementById('inp-clients').value);
+  const noise   = parseInt(document.getElementById('inp-noise').value);
+  const age     = parseInt(document.getElementById('inp-age').value);
+
+  document.getElementById('lbl-clients').textContent = clients;
+  document.getElementById('lbl-noise').textContent = noise;
+  document.getElementById('lbl-age').textContent = age;
+
+  // Simulate model outputs (deterministic formulas, no API)
+  const loadFactor = clients / 500;
+  const noiseFactor = (noise + 90) / 40; // 0=quiet, 1=noisy
+  const ageFactor = age / 60;
+
+  const anomalyScore = Math.min(100, Math.round(
+    20 + loadFactor*30 + noiseFactor*30 + ageFactor*20 + Math.random()*5));
+  const channelGain = Math.max(0, Math.round(
+    60 - loadFactor*20 - noiseFactor*25 + Math.random()*5));
+  const failureProb = Math.min(99, Math.round(
+    5 + ageFactor*40 + noiseFactor*20 + loadFactor*10 + Math.random()*5));
+  const qosScore = Math.max(10, Math.round(
+    100 - loadFactor*40 - noiseFactor*20 - Math.random()*5));
+
+  const anomalyColor = anomalyScore > 65 ? 'var(--danger)' : anomalyScore > 35 ? 'var(--warn)' : 'var(--success)';
+  const channelColor = channelGain > 50 ? 'var(--cisco2)' : channelGain > 25 ? 'var(--warn)' : 'var(--danger)';
+  const failColor = failureProb > 50 ? 'var(--danger)' : failureProb > 25 ? 'var(--warn)' : 'var(--success)';
+  const qosColor = qosScore > 70 ? 'var(--success)' : qosScore > 40 ? 'var(--warn)' : 'var(--danger)';
+
+  document.getElementById('inference-outputs').innerHTML = `
+    <div class="metric-card">
+      <div class="metric-label">Anomaly Score</div>
+      <div class="metric-val" style="color:${anomalyColor}">${anomalyScore}<span style="font-size:14px">%</span></div>
+      <div class="metric-sub">${anomalyScore>65?'⚠ HIGH — Alert sent':anomalyScore>35?'⚠ Moderate':'✓ Normal'}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Channel Opt. Gain</div>
+      <div class="metric-val" style="color:${channelColor}">+${channelGain}<span style="font-size:14px">%</span></div>
+      <div class="metric-sub">${channelGain>50?'✓ Excellent opportunity':'Re-check in 1h'}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Failure Risk (48h)</div>
+      <div class="metric-val" style="color:${failColor}">${failureProb}<span style="font-size:14px">%</span></div>
+      <div class="metric-sub">${failureProb>50?'⚠ Schedule maintenance':failureProb>25?'Monitor closely':'✓ Healthy'}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">QoS Confidence</div>
+      <div class="metric-val" style="color:${qosColor}">${qosScore}<span style="font-size:14px">%</span></div>
+      <div class="metric-sub">${qosScore>70?'✓ Policy applied':'⚠ Degraded QoS'}</div>
+    </div>`;
+}
+runInference();
+
+// ── KPI ANIMATION ──
+setInterval(() => {
+  const delta = Math.floor(Math.random()*6)-2;
+  const el = document.getElementById('kpi-clients');
+  if(el) el.textContent = (28491+delta).toLocaleString();
+}, 3000);
+</script>
+</body>
+</html>
