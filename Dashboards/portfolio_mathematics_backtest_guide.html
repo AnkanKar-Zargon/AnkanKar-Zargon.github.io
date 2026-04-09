@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Mathematics & Backtesting Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00d4aa;
+    --accent2: #4f8ef7;
+    --accent3: #f7c04f;
+    --accent4: #f75f8e;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --formula-bg: #0d1520;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1a2e 50%, #0a1220 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(0,212,170,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 30%;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(79,142,247,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 400;
+    line-height: 1.15;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  header h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  header p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 560px;
+  }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 20px 40px 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: none;
+    padding: 10px 18px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* MAIN CONTENT */
+  main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .model-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .model-card:hover { border-color: rgba(0,212,170,0.3); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--surface2);
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--border);
+    line-height: 1;
+    min-width: 40px;
+  }
+  .card-title-group { flex: 1; }
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: #fff;
+  }
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-top: 2px;
+  }
+  .card-badge {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .badge-green { color: var(--accent); border-color: rgba(0,212,170,0.3); background: rgba(0,212,170,0.05); }
+  .badge-blue { color: var(--accent2); border-color: rgba(79,142,247,0.3); background: rgba(79,142,247,0.05); }
+  .badge-yellow { color: var(--accent3); border-color: rgba(247,192,79,0.3); background: rgba(247,192,79,0.05); }
+  .badge-red { color: var(--accent4); border-color: rgba(247,95,142,0.3); background: rgba(247,95,142,0.05); }
+  .toggle-icon {
+    color: var(--muted);
+    font-size: 18px;
+    transition: transform 0.3s;
+  }
+  .card-header.open .toggle-icon { transform: rotate(180deg); }
+
+  .card-body { padding: 24px; display: none; }
+  .card-body.open { display: block; }
+
+  /* CONTENT BLOCKS */
+  .block-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    margin-top: 20px;
+  }
+  .block-label:first-child { margin-top: 0; }
+
+  p { font-size: 14.5px; color: #b0bec5; margin-bottom: 10px; }
+
+  /* FORMULA BOX */
+  .formula-box {
+    background: var(--formula-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: #7dd3c8;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .formula-box .comment { color: var(--muted); }
+  .formula-box .var { color: var(--accent3); }
+  .formula-box .op { color: var(--accent4); }
+  .formula-box .num { color: var(--accent2); }
+
+  /* CONDITIONS LIST */
+  .conditions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .condition-item {
+    background: var(--formula-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .cond-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .cond-text { color: #b0bec5; line-height: 1.5; }
+  .cond-text strong { color: var(--text); font-weight: 500; }
+
+  /* BACKTEST STEPS */
+  .backtest-steps { margin: 12px 0; }
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-content { flex: 1; }
+  .step-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .step-desc { font-size: 13px; color: var(--muted); }
+
+  /* PITFALLS */
+  .pitfall-list { list-style: none; margin: 10px 0; }
+  .pitfall-list li {
+    font-size: 13.5px;
+    color: #b0bec5;
+    padding: 6px 0 6px 20px;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .pitfall-list li::before {
+    content: '⚠';
+    position: absolute; left: 0;
+    color: var(--accent3);
+    font-size: 12px;
+  }
+
+  /* METRICS TABLE */
+  .metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 12px 0;
+  }
+  .metrics-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: var(--formula-bg);
+  }
+  .metrics-table td {
+    padding: 9px 12px;
+    color: #b0bec5;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .metrics-table td:first-child { color: var(--text); font-weight: 500; }
+  .metrics-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* SECTION INTRO */
+  .section-intro {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    border-left: 3px solid var(--accent2);
+  }
+  .section-intro h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .section-intro p { font-size: 14px; color: var(--muted); }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* CODE INLINE */
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    background: var(--formula-bg);
+    color: var(--accent3);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* SUMMARY SECTION */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+  .summary-card:hover {
+    border-color: rgba(0,212,170,0.4);
+    transform: translateY(-2px);
+  }
+  .sc-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .sc-name { font-size: 15px; font-weight: 500; color: #fff; margin-bottom: 4px; }
+  .sc-use { font-size: 12px; color: var(--muted); }
+
+  /* PYTHON CODE */
+  .python-block {
+    background: #080f1a;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+  .python-block pre {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #a8c8f0;
+    white-space: pre;
+  }
+  .py-kw { color: #c792ea; }
+  .py-fn { color: #82aaff; }
+  .py-str { color: #c3e88d; }
+  .py-cm { color: #546e7a; }
+  .py-num { color: #f78c6c; }
+  .py-var { color: #eefff7; }
+
+  @media (max-width: 600px) {
+    header { padding: 32px 20px 28px; }
+    .nav-tabs { padding: 16px 20px 0; }
+    main { padding: 24px 16px 60px; }
+    .card-header { padding: 16px; }
+    .card-body { padding: 16px; }
+    .conditions-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">Quantitative Finance Reference</div>
+  <h1>Portfolio Mathematics<br>& <em>Backtesting</em> Guide</h1>
+  <p>Conditions, formulas, and step-by-step backtesting methodology for every major portfolio model.</p>
+</header>
+
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="showSection('models')">Models & Conditions</button>
+  <button class="tab-btn" onclick="showSection('backtest')">Backtesting Framework</button>
+  <button class="tab-btn" onclick="showSection('metrics')">Performance Metrics</button>
+  <button class="tab-btn" onclick="showSection('code')">Python Pseudocode</button>
+  <button class="tab-btn" onclick="showSection('pitfalls')">Common Pitfalls</button>
+</div>
+
+<main>
+
+<!-- ===== MODELS & CONDITIONS ===== -->
+<div class="section active" id="section-models">
+
+  <div class="section-intro">
+    <h2>Models & Their Conditions</h2>
+    <p>Each model has explicit mathematical assumptions that must hold (or approximately hold) for results to be valid. Understanding when these conditions break down is just as important as the formulas themselves.</p>
+  </div>
+
+  <!-- MPT -->
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">01</div>
+      <div class="card-title-group">
+        <div class="card-title">Modern Portfolio Theory (MPT)</div>
+        <div class="card-subtitle">Markowitz Mean-Variance Optimization</div>
+      </div>
+      <span class="card-badge badge-green">Foundational</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="block-label">Core Formula</div>
+      <div class="formula-box"><span class="comment">// Portfolio Expected Return</span>
+E(Rp) = Σ wᵢ · E(Rᵢ)   for i = 1 to n
+
+<span class="comment">// Portfolio Variance (matrix form)</span>
+σ²p = <span class="var">w</span>ᵀ · <span class="var">Σ</span> · <span class="var">w</span>
+
+<span class="comment">// Two-asset expansion</span>
+σ²p = w₁²σ₁² + w₂²σ₂² + <span class="num">2</span>·w₁·w₂·σ₁·σ₂·ρ₁₂
+
+<span class="comment">// Optimization problem</span>
+min   w<span class="op">ᵀΣw</span>   subject to:  wᵀμ = μ*,  Σwᵢ = 1</div>
+
+      <div class="block-label">Required Conditions</div>
+      <div class="conditions-grid">
+        <div class="condition-item"><span class="cond-icon">📐</span><span class="cond-text"><strong>Normal Returns:</strong> Asset returns are normally distributed (or at minimum, described fully by mean and variance)</span></div>
+        <div class="condition-item"><span class="cond-icon">📊</span><span class="cond-text"><strong>Stationary Covariance:</strong> The covariance matrix Σ is stable over the estimation window</span></div>
+        <div class="condition-item"><span class="cond-icon">🔢</span><span class="cond-text"><strong>Positive Semi-Definite Σ:</strong> The covariance matrix must be PSD for the optimization to have a valid solution</span></div>
+        <div class="condition-item"><span class="cond-icon">⚖️</span><span class="cond-text"><strong>Rational Investors:</strong> Investors are mean-variance optimizers — they prefer more return and less risk</span></div>
+        <div class="condition-item"><span class="cond-icon">🚫</span><span class="cond-text"><strong>No Transaction Costs:</strong> The base model assumes frictionless trading (can be extended)</span></div>
+        <div class="condition-item"><span class="cond-icon">🔓</span><span class="cond-text"><strong>Short-selling allowed</strong> in unconstrained form; add <code>wᵢ ≥ 0</code> for long-only portfolios</span></div>
+      </div>
+
+      <div class="block-label">When Conditions Break</div>
+      <p>Returns exhibit fat tails (kurtosis > 3) during market crashes. Covariance matrices estimated from short windows are often ill-conditioned — use <strong>Ledoit-Wolf shrinkage</strong> as a remedy: <code>Σ̂ = (1-δ)Σ_sample + δ·F</code> where F is a structured target.</p>
+    </div>
+  </div>
+
+  <!-- CAPM -->
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">02</div>
+      <div class="card-title-group">
+        <div class="card-title">Capital Asset Pricing Model</div>
+        <div class="card-subtitle">CAPM — Single Factor Pricing</div>
+      </div>
+      <span class="card-badge badge-blue">Pricing</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="block-label">Core Formula</div>
+      <div class="formula-box"><span class="comment">// Security Market Line (SML)</span>
+E(Rᵢ) = Rf + <span class="var">βᵢ</span> · [E(Rm) <span class="op">-</span> Rf]
+
+<span class="comment">// Beta calculation</span>
+<span class="var">β</span> = Cov(Rᵢ, Rm) / Var(Rm) = <span class="var">ρᵢm</span> · σᵢ / σm
+
+<span class="comment">// Security Characteristic Line (statistical estimate)</span>
+Rᵢ <span class="op">-</span> Rf = <span class="var">α</span> + <span class="var">β</span>(Rm <span class="op">-</span> Rf) + ε</div>
+
+      <div class="block-label">Required Conditions</div>
+      <div class="conditions-grid">
+        <div class="condition-item"><span class="cond-icon">📈</span><span class="cond-text"><strong>Efficient Markets:</strong> All investors have same expectations and access to information</span></div>
+        <div class="condition-item"><span class="cond-icon">🏦</span><span class="cond-text"><strong>Risk-Free Asset Exists:</strong> Investors can borrow/lend unlimited amounts at Rf</span></div>
+        <div class="condition-item"><span class="cond-icon">⏱️</span><span class="cond-text"><strong>Single Period:</strong> Model is for one holding period; multi-period requires extensions (ICAPM)</span></div>
+        <div class="condition-item"><span class="cond-icon">🌍</span><span class="cond-text"><strong>Market Portfolio Proxy:</strong> A valid proxy for the true market portfolio is observable (e.g., S&P 500)</span></div>
+        <div class="condition-item"><span class="cond-icon">📉</span><span class="cond-text"><strong>Linear Risk-Return:</strong> Expected return is strictly linear in beta — no other risk factors exist</span></div>
+        <div class="condition-item"><span class="cond-icon">🔄</span><span class="cond-text"><strong>Beta Stability:</strong> Beta must be stable over the regression window (rolling beta helps)</span></div>
+      </div>
+
+      <div class="block-label">Validity Test</div>
+      <p>Run a cross-sectional regression: <code>E(Rᵢ) = γ₀ + γ₁·βᵢ + εᵢ</code>. CAPM predicts <strong>γ₀ = Rf</strong> and <strong>γ₁ = E(Rm) - Rf</strong>. Fama-MacBeth (1973) tests this formally. Empirically, the SML is often too flat — low-beta stocks outperform CAPM predictions.</p>
+    </div>
+  </div>
+
+  <!-- SHARPE -->
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">03</div>
+      <div class="card-title-group">
+        <div class="card-title">Sharpe, Sortino & Treynor Ratios</div>
+        <div class="card-subtitle">Risk-Adjusted Performance Metrics</div>
+      </div>
+      <span class="card-badge badge-yellow">Performance</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="block-label">Formulas</div>
+      <div class="formula-box"><span class="comment">// Sharpe Ratio — total risk</span>
+S = (E(Rp) <span class="op">-</span> Rf) / σp
+
+<span class="comment">// Sortino Ratio — downside risk only</span>
+Sortino = (E(Rp) <span class="op">-</span> Rf) / σ_down
+where σ_down = √[ (1/n) Σ min(Rᵢ - MAR, 0)² ]
+
+<span class="comment">// Treynor Ratio — systematic risk</span>
+T = (E(Rp) <span class="op">-</span> Rf) / β
+
+<span class="comment">// Information Ratio — active return</span>
+IR = (Rp <span class="op">-</span> Rb) / TE     <span class="comment">// TE = tracking error std dev</span></div>
+
+      <div class="block-label">Required Conditions</div>
+      <div class="conditions-grid">
+        <div class="condition-item"><span class="cond-icon">📊</span><span class="cond-text"><strong>Sharpe:</strong> Returns are normally distributed. Fails when return distributions are skewed or heavy-tailed</span></div>
+        <div class="condition-item"><span class="cond-icon">⬇️</span><span class="cond-text"><strong>Sortino:</strong> Use when return distribution is asymmetric. Set MAR (Minimum Acceptable Return) explicitly</span></div>
+        <div class="condition-item"><span class="cond-icon">📐</span><span class="cond-text"><strong>Treynor:</strong> Valid only for well-diversified portfolios where idiosyncratic risk is minimal</span></div>
+        <div class="condition-item"><span class="cond-icon">📏</span><span class="cond-text"><strong>Annualization:</strong> Multiply by √T (T = 252 for daily, 52 for weekly, 12 for monthly)</span></div>
+        <div class="condition-item"><span class="cond-icon">🔄</span><span class="cond-text"><strong>Rf Selection:</strong> Rf must match the return frequency — don't mix annual Rf with daily returns without conversion</span></div>
+        <div class="condition-item"><span class="cond-icon">📈</span><span class="cond-text"><strong>Sufficient History:</strong> Statistically reliable Sharpe estimates require at least 36 months of data</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VaR -->
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">04</div>
+      <div class="card-title-group">
+        <div class="card-title">Value at Risk & CVaR</div>
+        <div class="card-subtitle">Tail Risk Quantification</div>
+      </div>
+      <span class="card-badge badge-red">Risk</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="block-label">Formulas</div>
+      <div class="formula-box"><span class="comment">// Parametric VaR (normal assumption)</span>
+VaR_α = μ <span class="op">-</span> z_α · σ   <span class="comment">// z₀.₀₅ = 1.645 for 95% conf</span>
+
+<span class="comment">// Historical VaR</span>
+VaR_α = <span class="op">-</span>Quantile(returns, α)
+
+<span class="comment">// CVaR / Expected Shortfall</span>
+CVaR_α = <span class="op">-</span>E[R | R ≤ <span class="op">-</span>VaR_α]
+        = <span class="op">-</span>(1/α) · ∫₋∞^(-VaR) r·f(r) dr
+
+<span class="comment">// Portfolio VaR (positions vector)</span>
+VaR_p = z_α · √(<span class="var">w</span>ᵀ<span class="var">Σw</span>) · √T · Portfolio_Value</div>
+
+      <div class="block-label">Required Conditions</div>
+      <div class="conditions-grid">
+        <div class="condition-item"><span class="cond-icon">📐</span><span class="cond-text"><strong>Parametric VaR:</strong> Requires returns to be normally distributed — severely underestimates tail risk in crisis periods</span></div>
+        <div class="condition-item"><span class="cond-icon">📅</span><span class="cond-text"><strong>Historical VaR:</strong> Requires a long, representative return history. Lookback window must include stressed periods</span></div>
+        <div class="condition-item"><span class="cond-icon">⏱️</span><span class="cond-text"><strong>Time Horizon:</strong> VaR scales with √T under i.i.d. returns (10-day VaR ≈ 1-day VaR × √10)</span></div>
+        <div class="condition-item"><span class="cond-icon">🎯</span><span class="cond-text"><strong>CVaR is preferred:</strong> CVaR is sub-additive and coherent; VaR is NOT sub-additive — CVaR always ≥ VaR</span></div>
+        <div class="condition-item"><span class="cond-icon">🔢</span><span class="cond-text"><strong>Sufficient Data:</strong> For 99% VaR, need at least 500 observations for reliable historical estimation</span></div>
+        <div class="condition-item"><span class="cond-icon">🔗</span><span class="cond-text"><strong>Correlation Stability:</strong> Linear correlations used in parametric VaR fail in tail events (use copulas for tail dependence)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAMA FRENCH -->
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">05</div>
+      <div class="card-title-group">
+        <div class="card-title">Fama-French Factor Models</div>
+        <div class="card-subtitle">3-Factor & 5-Factor Return Decomposition</div>
+      </div>
+      <span class="card-badge badge-green">Factor</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="block-label">Formulas</div>
+      <div class="formula-box"><span class="comment">// 3-Factor Model (1993)</span>
+Rᵢ <span class="op">-</span> Rf = α + β₁(Rm<span class="op">-</span>Rf) + β₂·SMB + β₃·HML + ε
+
+<span class="comment">// 5-Factor Model (2015) — adds profitability + investment</span>
+Rᵢ <span class="op">-</span> Rf = α + β₁(Rm<span class="op">-</span>Rf) + β₂·SMB + β₃·HML
+              + β₄·RMW + β₅·CMA + ε
+
+<span class="comment">// Factor definitions</span>
+SMB = Return(Small) <span class="op">-</span> Return(Big)       <span class="comment">// Size premium</span>
+HML = Return(High B/M) <span class="op">-</span> Return(Low B/M)  <span class="comment">// Value premium</span>
+RMW = Return(Robust) <span class="op">-</span> Return(Weak)       <span class="comment">// Profitability</span>
+CMA = Return(Conservative) <span class="op">-</span> Return(Aggr)  <span class="comment">// Investment</span></div>
+
+      <div class="block-label">Required Conditions</div>
+      <div class="conditions-grid">
+        <div class="condition-item"><span class="cond-icon">📉</span><span class="cond-text"><strong>OLS Assumptions:</strong> Residuals ε must be i.i.d., zero-mean, and homoscedastic (use Newey-West SE for autocorrelation)</span></div>
+        <div class="condition-item"><span class="cond-icon">🔢</span><span class="cond-text"><strong>No Multicollinearity:</strong> Factors must not be highly correlated — check VIF (should be &lt; 5)</span></div>
+        <div class="condition-item"><span class="cond-icon">🌍</span><span class="cond-text"><strong>Factor Data Availability:</strong> Ken French's data library provides US factors; international factors require separate sources</span></div>
+        <div class="condition-item"><span class="cond-icon">🏷️</span><span class="cond-text"><strong>Alpha = 0 under H₀:</strong> CAPM predicts α = 0; a significant α means unexplained excess return (skill or missing factor)</span></div>
+        <div class="condition-item"><span class="cond-icon">⏱️</span><span class="cond-text"><strong>Minimum Window:</strong> Run regression on at least 60 monthly observations (5 years) for reliable factor loadings</span></div>
+        <div class="condition-item"><span class="cond-icon">📊</span><span class="cond-text"><strong>R² Interpretation:</strong> Model R² of 0.90+ for diversified portfolios; single stocks may have R² of only 0.3–0.6</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONTE CARLO -->
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">06</div>
+      <div class="card-title-group">
+        <div class="card-title">Monte Carlo Simulation</div>
+        <div class="card-subtitle">Stochastic Return Path Generation</div>
+      </div>
+      <span class="card-badge badge-blue">Simulation</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="block-label">Core Formula</div>
+      <div class="formula-box"><span class="comment">// Geometric Brownian Motion (GBM)</span>
+dS = μ·S·dt + σ·S·dW
+Sₜ = S₀ · exp[(μ <span class="op">-</span> σ²/<span class="num">2</span>)·t + σ·√t·Z]   Z ~ N(<span class="num">0</span>,<span class="num">1</span>)
+
+<span class="comment">// Discrete simulation step</span>
+Rₜ = (μ <span class="op">-</span> σ²/<span class="num">2</span>)·Δt + σ·√Δt·εₜ     εₜ ~ N(<span class="num">0</span>,<span class="num">1</span>)
+
+<span class="comment">// Correlated multi-asset paths (Cholesky)</span>
+L = cholesky(Σ)   <span class="comment">// Σ = L·Lᵀ</span>
+Z_corr = L · Z_indep   <span class="comment">// Inject correlations</span>
+
+<span class="comment">// Run N simulations, compute percentiles</span>
+VaR = <span class="op">-</span>Percentile(terminal_returns, α%)</div>
+
+      <div class="block-label">Required Conditions</div>
+      <div class="conditions-grid">
+        <div class="condition-item"><span class="cond-icon">🎲</span><span class="cond-text"><strong>GBM Assumption:</strong> Log-returns follow a normal distribution; prices follow a lognormal distribution</span></div>
+        <div class="condition-item"><span class="cond-icon">📌</span><span class="cond-text"><strong>Parameter Estimation:</strong> μ and σ must be estimated from historical data — use sufficient history (&gt; 5 years daily)</span></div>
+        <div class="condition-item"><span class="cond-icon">🔢</span><span class="cond-text"><strong>N ≥ 10,000 paths:</strong> For reliable percentile estimates at 99% confidence, run at minimum 10,000 simulations</span></div>
+        <div class="condition-item"><span class="cond-icon">🔗</span><span class="cond-text"><strong>Cholesky Validity:</strong> Covariance matrix must be positive definite for Cholesky decomposition to exist</span></div>
+        <div class="condition-item"><span class="cond-icon">⚠️</span><span class="cond-text"><strong>Regime Blindness:</strong> Standard GBM misses volatility clustering — use GARCH or regime-switching extensions for stress tests</span></div>
+        <div class="condition-item"><span class="cond-icon">📅</span><span class="cond-text"><strong>Time Step Δt:</strong> Smaller Δt increases accuracy; daily (1/252) is standard for equity portfolios</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RISK PARITY -->
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">07</div>
+      <div class="card-title-group">
+        <div class="card-title">Risk Parity & Equal Risk Contribution</div>
+        <div class="card-subtitle">Volatility-Weighted Allocation</div>
+      </div>
+      <span class="card-badge badge-yellow">Allocation</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="block-label">Formulas</div>
+      <div class="formula-box"><span class="comment">// Marginal Risk Contribution of asset i</span>
+MRC_i = (∂σp / ∂wᵢ) = (Σw)ᵢ / σp
+
+<span class="comment">// Risk Contribution</span>
+RC_i = wᵢ · MRC_i = wᵢ · (Σw)ᵢ / σp
+
+<span class="comment">// Equal Risk Contribution condition</span>
+RC_i = RC_j   for all i,j   (i.e. each asset = 1/n of total risk)
+
+<span class="comment">// Naive Risk Parity (inverse vol weights)</span>
+wᵢ = (<span class="num">1</span>/σᵢ) / Σ(<span class="num">1</span>/σⱼ)
+
+<span class="comment">// Full ERC — solve numerically (gradient descent)</span>
+min Σᵢ Σⱼ (RC_i <span class="op">-</span> RC_j)²</div>
+
+      <div class="block-label">Required Conditions</div>
+      <div class="conditions-grid">
+        <div class="condition-item"><span class="cond-icon">📊</span><span class="cond-text"><strong>Reliable Volatility Estimates:</strong> Use EWMA or GARCH for dynamic vol estimation rather than static historical vol</span></div>
+        <div class="condition-item"><span class="cond-icon">🔢</span><span class="cond-text"><strong>Positive-Definite Σ:</strong> The covariance matrix must be invertible. Regularize if near-singular</span></div>
+        <div class="condition-item"><span class="cond-icon">⚖️</span><span class="cond-text"><strong>Leverage Neutral:</strong> Naive ERC often underweights equities — may require leverage to hit return targets</span></div>
+        <div class="condition-item"><span class="cond-icon">🔄</span><span class="cond-text"><strong>Rebalancing Frequency:</strong> Weights drift as volatilities change — rebalance at minimum monthly</span></div>
+        <div class="condition-item"><span class="cond-icon">🌍</span><span class="cond-text"><strong>Asset Breadth:</strong> Works best with uncorrelated asset classes (equities, bonds, commodities, real assets)</span></div>
+        <div class="condition-item"><span class="cond-icon">📉</span><span class="cond-text"><strong>Correlation Regime:</strong> In crisis periods, correlations spike to 1 — risk parity diversification benefit collapses</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EFFICIENT FRONTIER -->
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">08</div>
+      <div class="card-title-group">
+        <div class="card-title">Efficient Frontier & Optimal Portfolios</div>
+        <div class="card-subtitle">Quadratic Programming for Weight Optimization</div>
+      </div>
+      <span class="card-badge badge-green">Optimization</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="block-label">Formulas</div>
+      <div class="formula-box"><span class="comment">// Global Minimum Variance Portfolio</span>
+w_GMV = (Σ⁻¹ · 1) / (1ᵀ · Σ⁻¹ · 1)
+
+<span class="comment">// Maximum Sharpe Ratio (Tangency) Portfolio</span>
+w* = (Σ⁻¹ · (μ <span class="op">-</span> Rf·1)) / (1ᵀ · Σ⁻¹ · (μ <span class="op">-</span> Rf·1))
+
+<span class="comment">// Two-Fund Separation Theorem</span>
+<span class="comment">// Any point on efficient frontier = combo of w_GMV and w*</span>
+w(λ) = λ·w* + (<span class="num">1</span><span class="op">-</span>λ)·w_GMV
+
+<span class="comment">// Capital Market Line (CML)</span>
+E(Rp) = Rf + [(E(Rm)<span class="op">-</span>Rf)/σm] · σp</div>
+
+      <div class="block-label">Required Conditions</div>
+      <div class="conditions-grid">
+        <div class="condition-item"><span class="cond-icon">🧮</span><span class="cond-text"><strong>Invertible Σ:</strong> If Σ is singular (e.g., n &gt; T), use regularization: <code>Σ_reg = Σ + λI</code></span></div>
+        <div class="condition-item"><span class="cond-icon">📈</span><span class="cond-text"><strong>Expected Returns:</strong> The frontier is highly sensitive to μ estimates — small errors in μ lead to extreme allocations (use Black-Litterman to stabilize)</span></div>
+        <div class="condition-item"><span class="cond-icon">🔒</span><span class="cond-text"><strong>Constraints:</strong> Add box constraints <code>0 ≤ wᵢ ≤ w_max</code> and sector limits to prevent degenerate solutions</span></div>
+        <div class="condition-item"><span class="cond-icon">🔄</span><span class="cond-text"><strong>Out-of-Sample:</strong> In-sample frontier is always optimistic — must validate on out-of-sample data</span></div>
+        <div class="condition-item"><span class="cond-icon">📅</span><span class="cond-text"><strong>Estimation Window:</strong> Rolling 1–3 year windows for covariance, 6–12 months for expected returns (shorter for means due to noise)</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end section-models -->
+
+
+<!-- ===== BACKTESTING FRAMEWORK ===== -->
+<div class="section" id="section-backtest">
+
+  <div class="section-intro">
+    <h2>Backtesting Framework</h2>
+    <p>Backtesting simulates how a strategy would have performed on historical data. A rigorous backtest follows a strict methodology to avoid false confidence in results.</p>
+  </div>
+
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">A</div>
+      <div class="card-title-group">
+        <div class="card-title">Walk-Forward Backtesting</div>
+        <div class="card-subtitle">The Gold Standard Methodology</div>
+      </div>
+      <span class="card-badge badge-green">Methodology</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="block-label">How It Works</div>
+      <div class="formula-box"><span class="comment">// Split data into rolling windows</span>
+Training window:  [t₀, t₀ + L_train]
+Test window:      [t₀ + L_train, t₀ + L_train + L_test]
+
+<span class="comment">// Roll forward</span>
+<span class="op">for</span> each period t:
+  1. Estimate Σ, μ on training window
+  2. Optimize weights w* on training data
+  3. Apply w* to test window → record returns
+  4. Slide both windows forward by L_test
+  5. Aggregate all test returns → backtest equity curve</div>
+
+      <div class="block-label">Step-by-Step Process</div>
+      <div class="backtest-steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Data Collection & Cleaning</div><div class="step-desc">Gather adjusted price data (dividends + splits). Handle missing values, survivorship bias, and corporate actions. Source from reliable vendors (Bloomberg, Refinitiv, CRSP).</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Define Universe & Benchmark</div><div class="step-desc">Fix your investable universe before the test starts. Choose the appropriate benchmark (e.g., S&P 500 for US equity, MSCI World for global). Universe must NOT be chosen with hindsight.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Specify All Rules Before Running</div><div class="step-desc">Define: signal generation, entry/exit conditions, rebalancing frequency, position sizing, max drawdown stops. No rule changes after seeing results.</div></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Implement Transaction Costs</div><div class="step-desc">Apply realistic costs: brokerage (~0.01–0.1% per trade), market impact (for large trades), bid-ask spread, and slippage. Formula: <code>Net Return = Gross Return − |Δw| × cost_rate</code></div></div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">Run Walk-Forward Simulation</div><div class="step-desc">Typical windows: 252-day training (1 year), 21-day test (1 month). Collect out-of-sample returns into a single equity curve.</div></div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-content"><div class="step-title">Compute Performance Metrics</div><div class="step-desc">Calculate Sharpe, Sortino, Max Drawdown, CAGR, Calmar Ratio, Alpha, Beta, and Information Ratio on the out-of-sample equity curve only.</div></div></div>
+        <div class="step"><div class="step-num">7</div><div class="step-content"><div class="step-title">Stress Testing & Scenario Analysis</div><div class="step-desc">Re-run strategy on crisis periods: 2000–2002 (dot-com), 2008–2009 (GFC), 2020 (COVID crash), 2022 (rate hikes). Verify the strategy survives.</div></div></div>
+        <div class="step"><div class="step-num">8</div><div class="step-content"><div class="step-title">Statistical Significance Test</div><div class="step-desc">Test if Sharpe > 0 using <code>t-stat = SR × √T</code>. At 95% confidence, need t-stat > 1.96. Also check for multiple testing bias (adjust p-values with Bonferroni or Benjamini-Hochberg).</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">B</div>
+      <div class="card-title-group">
+        <div class="card-title">Model-Specific Backtest Conditions</div>
+        <div class="card-subtitle">What to Validate for Each Model</div>
+      </div>
+      <span class="card-badge badge-blue">Validation</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <table class="metrics-table">
+        <thead>
+          <tr><th>Model</th><th>Key Backtest Check</th><th>Statistical Test</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>MPT / Efficient Frontier</td><td>Out-of-sample Sharpe vs. in-sample Sharpe degradation</td><td>Diebold-Mariano test for return forecast accuracy</td></tr>
+          <tr><td>CAPM / Beta</td><td>Alpha stability across subperiods; beta rolling stability</td><td>Fama-MacBeth cross-sectional regression</td></tr>
+          <tr><td>Fama-French 5F</td><td>Factor loadings stable in OOS? Alpha > 0 after fees?</td><td>GRS test (Gibbons-Ross-Shanken) for joint α = 0</td></tr>
+          <tr><td>VaR</td><td>Kupiec test: # VaR breaches must match expected frequency</td><td>Kupiec LR test (1995), Christoffersen test for independence</td></tr>
+          <tr><td>Monte Carlo</td><td>Coverage test: % of actual paths within predicted CI</td><td>Kolmogorov-Smirnov test for distribution fit</td></tr>
+          <tr><td>Risk Parity</td><td>Ex-post risk contribution equality; volatility of vol</td><td>Ex-post RC deviation from 1/n target</td></tr>
+          <tr><td>Sharpe Ratio</td><td>Significance test: t = SR × √T > 1.96</td><td>Ledoit-Wolf (2008) corrected Sharpe SE</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- end section-backtest -->
+
+
+<!-- ===== PERFORMANCE METRICS ===== -->
+<div class="section" id="section-metrics">
+
+  <div class="section-intro">
+    <h2>Performance Metrics Reference</h2>
+    <p>A comprehensive set of metrics that should be computed on every backtest. Never evaluate a strategy on Sharpe alone.</p>
+  </div>
+
+  <div class="model-card">
+    <div class="card-header open" onclick="toggleCard(this)">
+      <div class="card-number">★</div>
+      <div class="card-title-group">
+        <div class="card-title">Complete Metrics Compendium</div>
+        <div class="card-subtitle">Formulas, interpretation, and thresholds</div>
+      </div>
+      <span class="card-badge badge-green">Reference</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body open">
+      <table class="metrics-table">
+        <thead>
+          <tr><th>Metric</th><th>Formula</th><th>Good Threshold</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>CAGR</td><td>(Final/Initial)^(1/T) − 1</td><td>&gt; 10% p.a.</td><td>Absolute return</td></tr>
+          <tr><td>Sharpe Ratio</td><td>(Rp − Rf) / σp × √252</td><td>&gt; 1.0</td><td>Risk-adjusted return</td></tr>
+          <tr><td>Sortino Ratio</td><td>(Rp − MAR) / σ_down</td><td>&gt; 1.5</td><td>Downside-focused</td></tr>
+          <tr><td>Max Drawdown</td><td>max(Peak − Trough) / Peak</td><td>&lt; 20%</td><td>Worst loss from peak</td></tr>
+          <tr><td>Calmar Ratio</td><td>CAGR / Max Drawdown</td><td>&gt; 0.5</td><td>Return per unit MDD</td></tr>
+          <tr><td>Beta</td><td>Cov(Rp, Rm) / Var(Rm)</td><td>&lt; 1.0 for conservative</td><td>Market sensitivity</td></tr>
+          <tr><td>Alpha (Jensen's)</td><td>Rp − [Rf + β(Rm − Rf)]</td><td>&gt; 0 (significant)</td><td>Manager skill</td></tr>
+          <tr><td>Information Ratio</td><td>(Rp − Rb) / TE</td><td>&gt; 0.5</td><td>Active management</td></tr>
+          <tr><td>Tracking Error</td><td>std(Rp − Rb) × √252</td><td>&lt; 5% for index funds</td><td>Deviation from benchmark</td></tr>
+          <tr><td>Win Rate</td><td># winning periods / total</td><td>&gt; 50%</td><td>Consistency</td></tr>
+          <tr><td>Profit Factor</td><td>Gross Profit / Gross Loss</td><td>&gt; 1.5</td><td>Overall profitability</td></tr>
+          <tr><td>Skewness</td><td>E[(R−μ)³] / σ³</td><td>&gt; 0 preferred</td><td>Return asymmetry</td></tr>
+          <tr><td>Kurtosis</td><td>E[(R−μ)⁴] / σ⁴ − 3</td><td>Near 0 preferred</td><td>Tail heaviness</td></tr>
+          <tr><td>VaR (95%)</td><td>−Percentile(R, 5%)</td><td>Context-dependent</td><td>Daily loss limit</td></tr>
+          <tr><td>CVaR (95%)</td><td>E[R | R &lt; VaR] negated</td><td>Context-dependent</td><td>Expected tail loss</td></tr>
+          <tr><td>Turnover</td><td>Σ|Δwᵢ| / 2 per period</td><td>&lt; 50% monthly</td><td>Transaction cost driver</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- end section-metrics -->
+
+
+<!-- ===== PYTHON CODE ===== -->
+<div class="section" id="section-code">
+
+  <div class="section-intro">
+    <h2>Python Implementation Pseudocode</h2>
+    <p>Illustrative code showing how to implement each model and backtest in Python using NumPy, SciPy, and Pandas.</p>
+  </div>
+
+  <div class="model-card">
+    <div class="card-header open" onclick="toggleCard(this)">
+      <div class="card-number">Py</div>
+      <div class="card-title-group">
+        <div class="card-title">MPT Portfolio Optimization</div>
+        <div class="card-subtitle">Efficient Frontier + Sharpe Maximization</div>
+      </div>
+      <span class="card-badge badge-green">Code</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body open">
+      <div class="python-block"><pre><span class="py-kw">import</span> numpy <span class="py-kw">as</span> np
+<span class="py-kw">from</span> scipy.optimize <span class="py-kw">import</span> minimize
+
+<span class="py-cm"># --- 1. Compute inputs from price data ---</span>
+<span class="py-var">returns</span> = prices.pct_change().dropna()
+<span class="py-var">mu</span>      = returns.mean() * <span class="py-num">252</span>        <span class="py-cm"># Annualized expected returns</span>
+<span class="py-var">Sigma</span>   = returns.cov() * <span class="py-num">252</span>         <span class="py-cm"># Annualized covariance matrix</span>
+<span class="py-var">n</span>       = len(mu)
+
+<span class="py-cm"># --- 2. Define portfolio metrics ---</span>
+<span class="py-kw">def</span> <span class="py-fn">portfolio_stats</span>(w, mu, Sigma):
+    ret = w @ mu
+    vol = np.sqrt(w @ Sigma @ w)
+    sharpe = (ret - Rf) / vol
+    <span class="py-kw">return</span> ret, vol, sharpe
+
+<span class="py-cm"># --- 3. Maximize Sharpe (min negative Sharpe) ---</span>
+<span class="py-kw">def</span> <span class="py-fn">neg_sharpe</span>(w):
+    ret, vol, sr = portfolio_stats(w, mu, Sigma)
+    <span class="py-kw">return</span> -sr
+
+constraints = [{<span class="py-str">'type'</span>: <span class="py-str">'eq'</span>, <span class="py-str">'fun'</span>: <span class="py-kw">lambda</span> w: np.sum(w) - <span class="py-num">1</span>}]
+bounds = [(<span class="py-num">0</span>, <span class="py-num">1</span>)] * n     <span class="py-cm"># Long-only constraint</span>
+w0 = np.ones(n) / n      <span class="py-cm"># Equal weight initial guess</span>
+
+result = minimize(neg_sharpe, w0,
+                  method=<span class="py-str">'SLSQP'</span>,
+                  bounds=bounds,
+                  constraints=constraints)
+<span class="py-var">w_tangency</span> = result.x
+
+<span class="py-cm"># --- 4. Walk-Forward Backtest ---</span>
+<span class="py-var">L_train</span>, <span class="py-var">L_test</span> = <span class="py-num">252</span>, <span class="py-num">21</span>
+<span class="py-var">oos_returns</span> = []
+
+<span class="py-kw">for</span> t <span class="py-kw">in</span> range(L_train, len(returns) - L_test, L_test):
+    train = returns.iloc[t-L_train:t]
+    test  = returns.iloc[t:t+L_test]
+
+    mu_t    = train.mean() * <span class="py-num">252</span>
+    Sigma_t = train.cov() * <span class="py-num">252</span>
+    w_t     = optimize(mu_t, Sigma_t)   <span class="py-cm"># reoptimize</span>
+
+    period_ret = (test @ w_t).values
+    oos_returns.extend(period_ret)
+
+<span class="py-cm"># --- 5. Compute Sharpe on OOS results ---</span>
+<span class="py-var">oos</span>    = np.array(oos_returns)
+<span class="py-var">sharpe</span> = (oos.mean() * <span class="py-num">252</span> - Rf) / (oos.std() * np.sqrt(<span class="py-num">252</span>))
+<span class="py-var">t_stat</span> = sharpe * np.sqrt(len(oos) / <span class="py-num">252</span>)  <span class="py-cm"># Annualized t-stat</span></pre></div>
+    </div>
+  </div>
+
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">Py</div>
+      <div class="card-title-group">
+        <div class="card-title">VaR & CVaR Backtest (Kupiec Test)</div>
+        <div class="card-subtitle">Historical Simulation + Breach Testing</div>
+      </div>
+      <span class="card-badge badge-red">Code</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="python-block"><pre><span class="py-kw">import</span> scipy.stats <span class="py-kw">as</span> stats
+
+<span class="py-cm"># --- Historical VaR ---</span>
+<span class="py-var">confidence</span> = <span class="py-num">0.95</span>
+<span class="py-var">alpha</span>      = <span class="py-num">1</span> - confidence
+<span class="py-var">VaR_hist</span>   = -np.percentile(oos_returns, alpha * <span class="py-num">100</span>)
+
+<span class="py-cm"># CVaR (Expected Shortfall)</span>
+<span class="py-var">tail_losses</span> = [r <span class="py-kw">for</span> r <span class="py-kw">in</span> oos_returns <span class="py-kw">if</span> r <= -VaR_hist]
+<span class="py-var">CVaR</span>        = -np.mean(tail_losses)
+
+<span class="py-cm"># --- Kupiec Test for VaR Validity ---</span>
+<span class="py-var">T</span>          = len(oos_returns)
+<span class="py-var">breaches</span>   = sum(<span class="py-num">1</span> <span class="py-kw">for</span> r <span class="py-kw">in</span> oos_returns <span class="py-kw">if</span> r < -VaR_hist)
+<span class="py-var">p_hat</span>      = breaches / T          <span class="py-cm"># Observed breach rate</span>
+<span class="py-var">p_expected</span> = alpha                 <span class="py-cm"># Should match alpha (e.g., 0.05)</span>
+
+<span class="py-cm"># Likelihood ratio statistic</span>
+<span class="py-var">LR</span> = -<span class="py-num">2</span> * (
+    breaches * np.log(p_expected / p_hat) +
+    (T - breaches) * np.log((<span class="py-num">1</span>-p_expected) / (<span class="py-num">1</span>-p_hat))
+)
+<span class="py-var">p_value</span> = <span class="py-num">1</span> - stats.chi2.cdf(LR, df=<span class="py-num">1</span>)
+
+<span class="py-cm"># p_value > 0.05 → VaR model is valid (do NOT reject)</span>
+<span class="py-cm"># p_value < 0.05 → VaR model is mis-specified (too few or many breaches)</span></pre></div>
+    </div>
+  </div>
+
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">Py</div>
+      <div class="card-title-group">
+        <div class="card-title">Fama-French Factor Regression</div>
+        <div class="card-subtitle">OLS with Newey-West Standard Errors</div>
+      </div>
+      <span class="card-badge badge-blue">Code</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="python-block"><pre><span class="py-kw">import</span> statsmodels.api <span class="py-kw">as</span> sm
+
+<span class="py-cm"># Download factors from Ken French Data Library</span>
+<span class="py-cm"># ff_factors: columns = ['Mkt-RF','SMB','HML','RMW','CMA','RF']</span>
+
+<span class="py-var">excess_ret</span> = portfolio_returns - ff_factors[<span class="py-str">'RF'</span>]
+<span class="py-var">X</span> = ff_factors[[<span class="py-str">'Mkt-RF'</span>,<span class="py-str">'SMB'</span>,<span class="py-str">'HML'</span>,<span class="py-str">'RMW'</span>,<span class="py-str">'CMA'</span>]]
+<span class="py-var">X</span> = sm.add_constant(X)     <span class="py-cm"># Adds alpha intercept</span>
+
+<span class="py-cm"># OLS regression with Newey-West HAC standard errors</span>
+<span class="py-var">model</span>  = sm.OLS(excess_ret, X)
+<span class="py-var">result</span> = model.fit(cov_type=<span class="py-str">'HAC'</span>, cov_kwds={<span class="py-str">'maxlags'</span>: <span class="py-num">6</span>})
+<span class="py-fn">print</span>(result.summary())
+
+<span class="py-cm"># Key outputs:</span>
+<span class="py-cm"># const (alpha): intercept — is it statistically > 0?</span>
+<span class="py-cm"># Mkt-RF beta: market exposure</span>
+<span class="py-cm"># R-squared: what % of returns explained by factors</span>
+<span class="py-cm"># t-stats: each factor loading significance (|t| > 2 = significant)</span>
+
+<span class="py-cm"># GRS Test — all alphas jointly = 0?</span>
+<span class="py-cm"># Use: from linearmodels.asset_pricing import LinearFactorModel</span></pre></div>
+    </div>
+  </div>
+
+</div><!-- end section-code -->
+
+
+<!-- ===== PITFALLS ===== -->
+<div class="section" id="section-pitfalls">
+
+  <div class="section-intro">
+    <h2>Critical Pitfalls & How to Avoid Them</h2>
+    <p>Most backtests fail in live trading not because the model is wrong, but because of systematic biases introduced during the testing process.</p>
+  </div>
+
+  <div class="model-card">
+    <div class="card-header open" onclick="toggleCard(this)">
+      <div class="card-number">!</div>
+      <div class="card-title-group">
+        <div class="card-title">The 7 Cardinal Sins of Backtesting</div>
+        <div class="card-subtitle">Mistakes that make backtests look better than reality</div>
+      </div>
+      <span class="card-badge badge-red">Critical</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body open">
+      <ul class="pitfall-list">
+        <li><strong>Look-Ahead Bias:</strong> Using future information (e.g., tomorrow's price, end-of-day close to compute today's signal). Fix: All signals must be computed using data available at time t only.</li>
+        <li><strong>Survivorship Bias:</strong> Testing only on companies that still exist today — ignoring bankruptcies inflates returns by 1–2% annually. Fix: Use point-in-time databases (CRSP, Compustat).</li>
+        <li><strong>Overfitting / Data Snooping:</strong> Testing hundreds of parameter combinations and reporting the best. Fix: Reserve a hold-out test set NEVER touched during strategy design. Use walk-forward OOS.</li>
+        <li><strong>Transaction Cost Omission:</strong> Ignoring brokerage, spreads, and slippage. High-turnover strategies can lose 2–5% p.a. to costs. Fix: Model costs explicitly per trade.</li>
+        <li><strong>Ignoring Liquidity:</strong> Assuming you can trade any size at market price. Fix: Apply market impact model: <code>impact = σ · (Q/ADV)^0.5</code> for large trades.</li>
+        <li><strong>Short History / Regime Bias:</strong> Testing only on a bull market (e.g., 2012–2021) and calling it robust. Fix: Include 2000–2002, 2008–2009, and 2022 in the test.</li>
+        <li><strong>Multiple Testing Without Correction:</strong> Running 50 strategy variants and reporting the one with Sharpe 1.8. Fix: Adjust significance threshold — if testing k strategies, require p &lt; 0.05/k (Bonferroni) or use the Benjamini-Hochberg procedure.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="model-card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-number">✓</div>
+      <div class="card-title-group">
+        <div class="card-title">Backtest Quality Checklist</div>
+        <div class="card-subtitle">Before you trust any backtest result</div>
+      </div>
+      <span class="card-badge badge-green">Checklist</span>
+      <span class="toggle-icon">▾</span>
+    </div>
+    <div class="card-body">
+      <div class="conditions-grid">
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">OOS Sharpe t-stat &gt; 1.96</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Transaction costs included</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">No look-ahead bias verified</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Survivorship-bias-free data</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Tested across multiple market regimes</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Kupiec test passed for VaR models</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Walk-forward OOS (not in-sample)</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Multiple testing correction applied</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Max drawdown &lt; risk tolerance</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Turnover is implementable</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Liquidity constraints respected</span></div>
+        <div class="condition-item"><span class="cond-icon">✅</span><span class="cond-text">Parameters pre-specified (no cherry-picking)</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end section-pitfalls -->
+
+</main>
+
+<script>
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function toggleCard(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// Open first card in each section by default
+document.querySelectorAll('.model-card').forEach((card, i) => {
+  const header = card.querySelector('.card-header');
+  const body = card.querySelector('.card-body');
+  if (header.classList.contains('open')) {
+    body.classList.add('open');
+  }
+});
+</script>
+</body>
+</html>
