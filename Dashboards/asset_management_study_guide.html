@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quant Strats — Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #16161f;
+    --border: #252535;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --text: #e8e8f0;
+    --muted: #7878a0;
+    --accent: #4c7ac9;
+    --tag-bg: #1e1e30;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(76,122,201,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+  header {
+    margin-bottom: 52px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  h1 span { color: var(--gold); }
+  .subtitle {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 300;
+  }
+  .section { margin-bottom: 44px; }
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .term-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 22px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 20px;
+    align-items: start;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .term-card:hover {
+    border-color: rgba(201,168,76,0.3);
+    background: #1a1a25;
+  }
+  .term-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--gold-light);
+    line-height: 1.4;
+    padding-top: 2px;
+  }
+  .term-def {
+    font-size: 14px;
+    color: #c8c8de;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+  .term-def strong { color: var(--text); font-weight: 500; }
+  .need-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 18px 22px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 20px;
+    align-items: start;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .need-card:hover {
+    border-color: rgba(76,122,201,0.4);
+    border-left-color: var(--accent);
+    background: #1a1a25;
+  }
+  .need-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #8ab4f8;
+    line-height: 1.4;
+    padding-top: 2px;
+  }
+  .need-def {
+    font-size: 14px;
+    color: #c8c8de;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+  .need-def strong { color: var(--text); font-weight: 500; }
+  .count {
+    display: inline-block;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 2px 7px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  @media (max-width: 600px) {
+    .term-card, .need-card { grid-template-columns: 1fr; gap: 6px; }
+    .term-label, .need-label { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-label">Asset Management · Portfolio Management</div>
+    <h1>Asset Management <span>Study Guide</span></h1>
+    <p class="subtitle">All key terms, definitions & business needs — Quantitative Strategist</p>
+  </header>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-title">Quantitative & Statistical Terms <span class="count">14</span></div>
+
+    <div class="term-card">
+      <div class="term-label">Alpha</div>
+      <div class="term-def"><strong>Excess return above a benchmark</strong> (e.g., S&P 500). A strategy generating alpha outperforms the market on a risk-adjusted basis. The core objective of every Strats signal or model.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Alpha Signal</div>
+      <div class="term-def">A <strong>quantitative indicator derived from data</strong> that predicts future asset returns. Built using statistical or ML techniques and validated through rigorous backtesting before deployment.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Time Series Analysis</div>
+      <div class="term-def">Study of data points ordered in <strong>time</strong> to identify trends, cycles, and seasonality. Core to modeling asset prices, volatility, and macro indicators. Key tools: ARIMA, GARCH, Kalman Filter.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Regression Analysis</div>
+      <div class="term-def">Statistical method to model the <strong>relationship between variables</strong>. OLS (Ordinary Least Squares) is the baseline; applied to factor modeling, pricing models, and return prediction.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Backtesting</div>
+      <div class="term-def">Testing a strategy on <strong>historical data</strong> to evaluate performance before live deployment. Must guard against look-ahead bias, overfitting, and survivorship bias to be credible.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Look-Ahead Bias</div>
+      <div class="term-def">A critical modelling error where <strong>future data is inadvertently used</strong> to construct past signals, making backtests artificially better than real-world performance would be.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Overfitting</div>
+      <div class="term-def">When a model is <strong>too tailored to historical data</strong> and breaks on new data. Detected via out-of-sample testing, cross-validation, and regularization techniques like L1 (Lasso) and L2 (Ridge).</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Sharpe Ratio</div>
+      <div class="term-def"><strong>Risk-adjusted return</strong> = (Portfolio Return − Risk-Free Rate) ÷ Standard Deviation. A Sharpe above 1 is generally acceptable; above 2 is strong for a live deployed strategy.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Factor Model</div>
+      <div class="term-def">Decomposes asset returns into <strong>systematic risk factors</strong> — market, size, value, momentum, quality. Fama-French is the classic example. Used in portfolio construction and return attribution.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Forecasting</div>
+      <div class="term-def">Using historical patterns and models to <strong>predict future values</strong> — returns, volatility, correlations. Ranges from statistical approaches (ARIMA) to machine learning (XGBoost, LSTMs).</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Machine Learning (in Finance)</div>
+      <div class="term-def">Algorithms that <strong>learn patterns from data</strong> without explicit programming. Includes supervised (classification, regression), unsupervised (clustering), and reinforcement learning. Applied to signal generation, fraud detection, and NLP on earnings filings.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Optimization</div>
+      <div class="term-def">Mathematical process to find the <strong>best solution under constraints</strong>. In finance: maximize return for a given risk budget. Methods include quadratic programming and convex optimization (e.g., cvxpy).</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Econometrics</div>
+      <div class="term-def">Application of <strong>statistical models to economic data</strong> to test hypotheses. Includes cointegration, VAR (Vector Autoregression) models, and tests like Granger causality for macro-to-market signal research.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Monte Carlo Simulation</div>
+      <div class="term-def">Uses <strong>random sampling</strong> to model probability distributions of outcomes. Applied to risk analysis, option pricing, and stress testing portfolios under uncertain and extreme market scenarios.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-title">Portfolio & Investment Terms <span class="count">12</span></div>
+
+    <div class="term-card">
+      <div class="term-label">Portfolio Construction</div>
+      <div class="term-def">The process of <strong>selecting and weighting assets</strong> to build a portfolio that meets a target risk/return profile. Involves factor exposure, correlation analysis, and systematic position sizing.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Portfolio Optimization</div>
+      <div class="term-def">Formal mathematical process — typically <strong>mean-variance optimization (Markowitz)</strong> — to find portfolios on the efficient frontier. Extended by Black-Litterman and risk parity models.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Efficient Frontier</div>
+      <div class="term-def">The set of portfolios offering <strong>maximum return for a given level of risk</strong>. Portfolios below it are suboptimal. The foundation of Modern Portfolio Theory (MPT).</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Risk-Adjusted Return</div>
+      <div class="term-def">Return measured <strong>relative to the risk taken</strong> to achieve it. Key metrics: Sharpe (total volatility), Sortino (downside risk only), Calmar (vs max drawdown). What portfolio managers actually evaluate.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Drawdown / Max Drawdown</div>
+      <div class="term-def">The <strong>peak-to-trough decline</strong> in portfolio value. Maximum drawdown = worst historical loss from a peak. A great Sharpe ratio with a 40% max drawdown may still be commercially unacceptable.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Rebalancing</div>
+      <div class="term-def">Periodic adjustment of portfolio weights <strong>back to target allocations</strong> — triggered by drift, signals, or scheduled intervals. Quants model optimal rebalancing to minimize transaction costs.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Transaction Cost Analysis (TCA)</div>
+      <div class="term-def">Measuring the <strong>full cost of executing trades</strong> — bid-ask spread, market impact, slippage, and commissions. Strats model TCA to prevent alpha being eroded by poor execution.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Benchmark</div>
+      <div class="term-def">A <strong>reference index</strong> (e.g., S&P 500, MSCI World) against which fund performance is measured. Strats build attribution models that explain return drivers versus the benchmark.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Hedging</div>
+      <div class="term-def">A position taken to <strong>offset risk</strong> in another position — e.g., buying puts to hedge long equity exposure. Strats build hedging models particularly for rates, FX, and credit risk exposures.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Long / Short</div>
+      <div class="term-def"><strong>Long</strong> = owning an asset, profiting when it rises. <strong>Short</strong> = borrowing and selling, profiting when it falls. Quant funds run long/short factor strategies to isolate pure alpha from market direction.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Fund Management Model</div>
+      <div class="term-def">A system to <strong>track, evaluate, and manage</strong> a fund's ongoing performance — covering NAV calculation, return attribution, risk reporting, and scenario analysis. Strats build and own these platforms.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Capital Sourcing</div>
+      <div class="term-def">The process of <strong>identifying and allocating capital</strong> to investment opportunities. Strats provide analytics to optimize how capital is deployed across strategies, geographies, and asset classes.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-title">Risk, Controls & Governance Terms <span class="count">9</span></div>
+
+    <div class="term-card">
+      <div class="term-label">Value at Risk (VaR)</div>
+      <div class="term-def">Maximum expected loss over a <strong>given time horizon at a confidence level</strong> — e.g., 95% 1-day VaR represents the worst 5% of daily outcomes. A standard risk metric across all major financial institutions.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Stress Testing</div>
+      <div class="term-def">Simulating <strong>extreme but plausible market scenarios</strong> (2008 crisis, COVID crash, rate shocks) to assess portfolio resilience. Required by regulators and essential for credible risk management.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Model Risk</div>
+      <div class="term-def">Risk of <strong>financial loss from flawed or misused quantitative models</strong> — wrong assumptions, poor data quality, or implementation errors. Strats are directly accountable for model quality.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Model Governance</div>
+      <div class="term-def">A formal framework of <strong>validation, documentation, version control, and post-deployment monitoring</strong> for models. Includes independent review cycles and change management processes.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Counterparty Credit Risk</div>
+      <div class="term-def">Risk that the <strong>other party in a transaction defaults</strong> before fulfilling obligations. Strats build exposure and margin models — particularly critical in derivatives and OTC markets.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Compliance</div>
+      <div class="term-def">Adherence to <strong>regulatory requirements, laws, and internal firm policies</strong>. In a quant role: ensuring models, strategies, and data usage meet SEC, FCA, MAS, and other applicable rules.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Internal Controls</div>
+      <div class="term-def">Processes and systems to <strong>ensure accuracy, reliability, and regulatory compliance</strong>. In strats: model validation gates, data quality checks, structured code review, and deployment controls.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Asset & Liability Management (ALM)</div>
+      <div class="term-def">Managing the <strong>balance between assets and liabilities</strong> — timing, interest rate sensitivity, and liquidity. Critical for banks and insurers; Strats build ALM models and scenario analytics.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Integrity in Modelling</div>
+      <div class="term-def">Never letting <strong>business pressure distort model outputs or results</strong>. Reproducibility, honest error reporting, and no cherry-picked backtests are non-negotiable professional standards.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <div class="section-title">Technical & Systems Terms <span class="count">9</span></div>
+
+    <div class="term-card">
+      <div class="term-label">Slang</div>
+      <div class="term-def">Banks and Hedge Funds' <strong>proprietary programming language</strong> used across trading and strats. Built on Python-like syntax, designed for high-performance financial computation. Listed explicitly in Bank and Hedge Funds job descriptions — know it exists.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Production System</div>
+      <div class="term-def">A <strong>live, business-critical system</strong> running real workloads — not a research prototype. Strats own production systems that must be stable, scalable, monitored, and recoverable under failure.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Data Pipeline</div>
+      <div class="term-def">An automated workflow that <strong>ingests, cleans, transforms, and delivers data</strong> to models or analytics. Pipeline quality and latency directly affect model accuracy and downstream business decisions.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Pricing Model</div>
+      <div class="term-def">A quantitative model that determines the <strong>fair value of a financial instrument</strong> — options (Black-Scholes), bonds (DCF), credit derivatives. Strats own the firm's core pricing infrastructure.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Trading Automation</div>
+      <div class="term-def">Using algorithms to <strong>execute trades automatically</strong> based on signals, rules, or models — without manual intervention. Requires robust systems, pre-trade risk controls, and emergency kill switches.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Infrastructure Development</div>
+      <div class="term-def">Building the <strong>underlying systems, frameworks, and tools</strong> that support models and analytics — databases, APIs, compute infrastructure, and CI/CD (continuous integration/deployment) pipelines.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Data Structures & Algorithms</div>
+      <div class="term-def">Core computer science foundations: how data is <strong>stored (arrays, trees, graphs, hash maps)</strong> and how problems are solved efficiently. Critical for writing fast, scalable financial computation code.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Object-Oriented Programming</div>
+      <div class="term-def">A programming paradigm using <strong>classes and objects</strong> to structure reusable, maintainable code. Expected proficiency in Python, C++, or Java for Strats roles at Bank and Hedge Funds.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">SQL / Relational Databases</div>
+      <div class="term-def">Structured Query Language for <strong>querying and managing structured datasets</strong>. Essential for pulling financial data, engineering model features, and maintaining production data stores.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section">
+    <div class="section-title">Business Needs — What Bank and Hedge Funds Needs Solved <span class="count">10</span></div>
+
+    <div class="need-card">
+      <div class="need-label">Alpha Generation</div>
+      <div class="need-def">Build <strong>signals and strategies that consistently outperform benchmarks</strong> after all costs. The core commercial purpose of Asset Management. Every model must ultimately serve this objective.</div>
+    </div>
+
+    <div class="need-card">
+      <div class="need-label">Portfolio Construction at Scale</div>
+      <div class="need-def">Automate and optimize how <strong>hundreds of portfolios are built and rebalanced</strong> across clients, asset classes, and geographies — consistently, accurately, and at speed.</div>
+    </div>
+
+    <div class="need-card">
+      <div class="need-label">Risk Management</div>
+      <div class="need-def">Continuously <strong>measure, monitor, and control portfolio risk</strong> — market, credit, liquidity, and operational. Build models that surface risk before it materializes as loss.</div>
+    </div>
+
+    <div class="need-card">
+      <div class="need-label">Pricing Accuracy</div>
+      <div class="need-def">Ensure all instruments — public and private — are <strong>fairly and consistently valued</strong>. Critical for NAV accuracy, client reporting, and meeting regulatory fair value requirements.</div>
+    </div>
+
+    <div class="need-card">
+      <div class="need-label">Model Integrity & Governance</div>
+      <div class="need-def">Every model must have <strong>proper documentation, independent validation, audit trail, and change management</strong>. A regulatory and reputational requirement at a firm of Bank and Hedge Funds's standing.</div>
+    </div>
+
+    <div class="need-card">
+      <div class="need-label">Operational Scalability</div>
+      <div class="need-def">Build systems that <strong>handle growing data volumes and business complexity</strong> without proportional headcount growth. As AUM grows, infrastructure must scale efficiently and reliably.</div>
+    </div>
+
+    <div class="need-card">
+      <div class="need-label">Cross-Divisional Collaboration</div>
+      <div class="need-def">Strats work with <strong>traders, PMs, bankers, engineers, risk, and compliance</strong>. The need: a quant who translates complex model outputs into clear, actionable decisions for non-technical stakeholders.</div>
+    </div>
+
+    <div class="need-card">
+      <div class="need-label">Client Analytics & Reporting</div>
+      <div class="need-def">Provide <strong>accurate, clear performance attribution and analytics</strong> to institutional clients. Strats build the platforms generating these reports — accuracy and full auditability are non-negotiable.</div>
+    </div>
+
+    <div class="need-card">
+      <div class="need-label">Regulatory Compliance</div>
+      <div class="need-def">Ensure all models, systems, and strategies <strong>comply with SEC, FCA, MAS, and other applicable regulatory frameworks</strong>. Non-compliance is an existential risk for the firm, not just a business issue.</div>
+    </div>
+
+    <div class="need-card">
+      <div class="need-label">Speed to Production</div>
+      <div class="need-def">Research ideas must be <strong>productionized quickly without sacrificing reliability</strong>. Competitive advantage depends on deploying strategies faster than peers while maintaining full system integrity.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section">
+    <div class="section-title">Bank and Hedge Funds-Specific Concepts to Know <span class="count">6</span></div>
+
+    <div class="term-card">
+      <div class="term-label">Strats (Strategists)</div>
+      <div class="term-def">Bank and Hedge Funds's unique role that <strong>owns both the quant models AND the production systems</strong> end-to-end — unlike most firms where research and engineering are separate teams with a handoff in between.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">The Strats Platform</div>
+      <div class="term-def">Bank and Hedge Funds's internal ecosystem where Strats <strong>build, deploy, and maintain analytics, pricing, and portfolio management tools</strong>. Designed for creative, business-connected problem solving at scale.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Revenue-Generating Business</div>
+      <div class="term-def">Your work directly supports <strong>teams that generate revenue for the firm</strong> — trading desks, PM teams, investment banking. Strats are not a cost center; they are a direct performance multiplier.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Bank and Hedge Funds Asset Management</div>
+      <div class="term-def">A <strong>top 10 global asset manager</strong>. Manages public equity, fixed income, alternatives, and multi-asset strategies across institutional and private clients worldwide.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Alternatives</div>
+      <div class="term-def"><strong>Non-traditional asset classes</strong>: private equity, hedge funds, real estate, infrastructure, private credit. Bank and Hedge Funds Which is a leading global alternatives investor — Strats build analytics across all of these.</div>
+    </div>
+
+    <div class="term-card">
+      <div class="term-label">Boutique within a Large Firm</div>
+      <div class="term-def">Bank and Hedge Funds's positioning — offering the <strong>resources and reach of a global giant</strong> with the focused, specialized investment culture of a boutique. Understand this when explaining why you chose Bank and Hedge Funds over competitors.</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
